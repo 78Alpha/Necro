@@ -1,10 +1,6 @@
 from __future__ import print_function
 import Globals
-import os, platform, time, random, gc, sys, threading #, subprocess
-
-# Game start time
-
-time1 = time.time()
+import os, platform, time, random, gc, sys, threading, CLock
 
 # Operating system
 
@@ -46,6 +42,19 @@ rise_price = Globals.rise_price
 gene = Globals.gene
 limit = Globals.limit
 
+def spinning_cursor():
+    while True:
+        for cursor in '|/-\\':
+            yield cursor
+
+def cursor():
+    spinner = spinning_cursor()
+    for _ in range(5):
+        sys.stdout.write(next(spinner))
+        sys.stdout.flush()
+        time.sleep(0.1)
+        sys.stdout.write('\b')
+
 def word_core(sen, sec): # Human-like typing
     for letter in sen:
         print(letter, end='')
@@ -61,23 +70,11 @@ def word_corex(stub, sen): # Human-like with a stationary starter
         sys.stdout.flush()  # Needed for Unix based systems
         time.sleep(.01)
 
-def spinning_cursor():
-    while True:
-        for cursor in '|/-\\':
-            yield cursor
-def cursor():
-    spinner = spinning_cursor()
-    for _ in range(5):
-        sys.stdout.write(spinner.next())
-        sys.stdout.flush()
-        time.sleep(0.1)
-        sys.stdout.write('\b')
-
 def word_corez(sen): # Human-like typing
     for letter in sen:
         print(letter, end='')
         sys.stdout.flush()  # Needed for Unix based systems
-        time.sleep(0.0008)
+        time.sleep(0)
 
 def loading(stub,sub, sen, stubs):
     print(stub, end='')
@@ -104,11 +101,9 @@ def word_corey(stub, sen, stubs): # Stationary title with a natural typing state
         sys.stdout.flush()  # Needed for Unix based systems
         marker += 1
         time.sleep(.01)
-    #print(marker)
     while marker != 97:
         marker += 1
         print(" ", end='')
-    #print(marker)
     print(stubs, end='')
 
 def check_cure_start(): #determines if cure research should start or not
@@ -172,7 +167,7 @@ def inf_graph(): # Visuals for population infection
     infect = int((float(infected)/limit)*100)
     inf = "["
     for i in range(infect):  # Visual for infection
-        inf += "O"
+        inf += "|"
     for i in range(100-int(infect)):  # Visual for non-infected
         inf += "."
     inf2 = str(inf) + "] " + str(infect) + "% Infected"
@@ -187,7 +182,7 @@ def cure_progress(): #notifies if the cure is a threat or not
     global cure_percent
     cure_percent = (float(cure)/1000) * 100
     cur_graph()
-    if cure_percent < int(10):  # Tells the player how much of a threat the cure currently is
+    if cure_percent < int(10):
         print("The cure is not yet a threat\n")
     elif cure_percent < int(25):
         print("The cure is becoming an annoyance\n")
@@ -208,7 +203,7 @@ def cur_graph(): #Displays the percent of cure completion
     global cure_percent
     curer = int(cure_percent)
     for i in range(curer):  # percent to completion
-        cur += "O"
+        cur += "|"
     for i in range(100-int(curer)):  # Distance from completion
         cur += "."
     cur2 = str(cur) + "] " + str(curer) + "% Complete"
@@ -226,7 +221,7 @@ def hea_graph(): # A graph for the amount of healthy people
         alive2 = 1
     alive3 = int(alive2 * 100)
     for i in range(alive3):  # Amount healthy
-        hea += "O"
+        hea += "|"
     for i in range(100 - int(alive3)):  # Amount not healthy
         hea += "."
     cur2 = str(hea) + "] " + str(alive3) + "% Healthy"
@@ -243,7 +238,7 @@ def dea_graph():
     corpse = int((float(dead) / limit) * 100)
     dea = "["
     for i in range(corpse):  # Amount dead
-        dea += "O"
+        dea += "|"
     for i in range(100 - int(corpse)):  # Amount not dead
         dea += "."
     dea2 = str(dea) + "] " + str(corpse) + "% Dead"
@@ -260,7 +255,7 @@ def zom_graph(): # Graph of zombies
     walkers = int((float(zombies) / limit) * 100)
     zom = "["
     for i in range(walkers):  # Are zombs
-        zom += "O"
+        zom += "|"
     for i in range(100 - int(walkers)):  # Are not zombs
         zom += "."
     zom2 = str(zom) + "] " + str(walkers) + "% Zombies"
@@ -278,7 +273,7 @@ def graphical_analysis(): # Displays all world graphs
     zom_graph()
     cure_progress()
     print("\n")
-    raw_input("Press ENTER to continue...")
+    input(str("Press ENTER to continue..."))
     clear()
     player_menu()
 
@@ -294,17 +289,17 @@ def plague_status_graph(): # Displays all plague graphs
     let = "["
     status = int((float(infectivity) / infectivity_limit) * 100)
     for i in range(status):
-        tiv += "O"
+        tiv += "|"
     for i in range(100-int(status)):
         tiv += "."
     status2 = int((float(severity) / severity_limit) * 100)
     for i in range(status2):
-        sev += "O"
+        sev += "|"
     for i in range(100-int(status2)):
         sev += "."
     status3 = int((float(lethality) / lethality_limit) * 100)
     for i in range(status3):
-        let += "O"
+        let += "|"
     for i in range(100-int(status3)):
         let += "."
     infective = str(tiv) + "] " + str(status) + "% To Infectivity Max"
@@ -322,7 +317,7 @@ def plague_status_graph(): # Displays all plague graphs
     print(lethal)
     print("\n")
     time.sleep(1)
-    raw_input("Press ENTER to continue...")
+    input(str("Press ENTER to continue..."))
     clear()
     player_menu()
 
@@ -338,7 +333,6 @@ def enforce_value_maximums(): #Makes sure that maximum/minumum values are never 
     global severity_limit
     global lethality_limit
     global limit
-    #LETH = lethality
     if lethality > lethality_limit:
         lethality = lethality_limit
     if lethality < 0:
@@ -894,56 +888,48 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
     word_corey("@@@@", "", "@@@@\n")
     word_corey("@@@@ >>> EVOLVE | ", "Research genes to inject into your virus", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("EVOLVE |", "Research genes to inject into your virus")
-    #print("\n")
     word_corey("@@@@ >>> LEVEL | ", "Check the research level of gene paths", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("LEVEL |", "Check the research level of gene paths")
-    #print("\n")
     word_corey("@@@@ >>> INFO | ", "Study the possible gene paths", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("INFO |", "Study the possible gene paths")
-    #print("\n")
     word_corey("@@@@ >>> LEAVE | ", "Leave your lab", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
     word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    #word_corex("LEAVE |", "Leave your lab")
-    #print("\n")
-    decide = raw_input("Command: ")
+    decide = input(str("Command: "))
     if decide == "INFO":
         clear()
         lux()
         BURST_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         NECROSIS_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         WATER_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         AIR_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         BLOOD_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         SALIVA_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         ZOMBIFY_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         lux()
         RISE_info()
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         attribute_menu()
     elif decide == "LEVEL":
@@ -966,14 +952,12 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
         word_corey("@@@@", "  Rise Level: " + str(rise), "@@@@\n")
         word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-        raw_input("Press ENTER to continue...")
+        input(str("Press ENTER to continue..."))
         clear()
         attribute_menu()
     elif decide == "EVOLVE":
         clear()
         lux()
-        #word_core("Here is what you can synthesize...", 0.05)
-        #print("\n")
         BURST_store_price()
         NECROSIS_store_price()
         WATER_store_price()
@@ -1010,8 +994,8 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
         word_corey("@@@@  RESEARCH POINTS | ", str(dna_points), "@@@@\n")
         word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-        evo = raw_input("Synthesize: ")
-        if evo == gene[0]:  # BURST buy menu and initial effects that won't happen recursively // passive
+        evo = input(str("Synthesize: "))
+        if evo == gene[0]:
             if burst_price != '--':
                 if dna_points >= burst_price:
                     clear()
@@ -1218,7 +1202,7 @@ def exit_game(): # Gotta quit sometime, right?
     clear()
     word_core("You have chosen to exit the game... Are you sure? [y]/[n]", 0.05)
     print("\n")
-    ans = raw_input() #May show in error in Pycharm, this is due to the fact it thinks it's Python 3 but it's really Python 2.7
+    ans = input(str())
     print("\n")
     if ans == "Y" or ans == "y" or ans == "Yes" or ans == "yes" or ans == "YES":
         word_core("Exiting game...", 0.05)
@@ -1233,57 +1217,30 @@ def exit_game(): # Gotta quit sometime, right?
     else:
         exit_game()
 
-def player_menu(): #allows player to choose what they will do
+def player_menu():
     clear()
     lux()
-    #word_corey("@@@@", "What are your plans for this week?", "@@@@")
-    #print("\n")
     word_corey("@@@@", "  Week: " + str(week), "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_core("Week: " + str(week), 0.05)
-    #print("\n")
     word_corey("@@@@ >>> WORLD | ", "View world data", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("WORLD |", "View world data")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> VIRUS | ", "View nano-virus data", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("VIRUS |", "View nano-virus data")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> LAB | ", "Work on your virus in the lab", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("LAB |", "Work on your virus in the lab")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> TURN | ", "Move onto the next week", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("TURN |", "Move onto the next week")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> FAST | ", "Enter fast turn mode", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("FAST |", "Enter fast turn mode")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> SAVE | ", "Save your progress", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("SAVE |", "Save your progress")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> LOAD | ", "Load a previous save", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
-    #word_corex("LOAD |", "Load a previous save")
-    #print("\n")
-    #time.sleep(0.3)
     word_corey("@@@@ >>> EXIT | ", "Quit the game without saving", "@@@@\n")
     word_corey("@@@@", "", "@@@@\n")
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    #word_corex("EXIT |", "Quit the game without saving")
-    #print("\n")
-    answer = raw_input("Command: ")
+    answer = input(str("Command: "))
     if answer == "WORLD":
         clear()
         graphical_analysis()
@@ -1312,7 +1269,7 @@ def player_menu(): #allows player to choose what they will do
     else:
         player_menu()
 
-def save(): # Allows the player to save the game
+def save():
     with open("Save_file.py", "a") as file:
         file.write("healthy = " + str(healthy) + "\n")
         file.write("infected = " + str(infected) + "\n")
@@ -1342,20 +1299,20 @@ def save(): # Allows the player to save the game
         file.write("rise = " + str(rise) + "\n")
         file.write("gene = " + str(gene) + "\n")
         file.write("limit = int(" + str(healthy) + " + " + str(infected) + " + " + str(dead) + " + " + str(zombies) + ")\n")
-        file.write("time1 = float( " + str(time1) + ")\n")  # May need to change to single session, time overflow may read negative time
+        file.write("time1 = float( " + str(time1) + ")\n")
     clear()
     word_corex("SAVING |", "Save completed successfully")
     time.sleep(2)
     clear()
     player_menu()
 
-def delete(): # Deletes old save to make anew one, will corrupt the game if not run before new save is made
+def delete():
     if OS == "Windows":
         os.system("del Save_file.py")
     else:
         os.system("rm Save_file.py")
 
-def load(): # Load your save file
+def load():
     import Save_file as load
     global zombies
     zombies = load.zombies
@@ -1412,7 +1369,7 @@ def load(): # Load your save file
     word_corex("LOADING |", "Loading complete...")
     player_menu()
 
-def turn(): #changes the week number for progression
+def turn():
     clear()
     global week
     week += 1
@@ -1430,7 +1387,7 @@ def turn(): #changes the week number for progression
     print("\n")
     player_menu()
 
-def turn_fast(): # Second function of turn that will be changed for fast_turn if necessary
+def turn_fast():
     clear()
     global week
     week += 1
@@ -1447,15 +1404,15 @@ def turn_fast(): # Second function of turn that will be changed for fast_turn if
     Game_Over()
     print("\n")
 
-def fast_turn(): # A faster version of turn for the early game where nothing happens
+def fast_turn():
     word_core("Press ENTER to take a turn...", 0.1)
     print("\n")
     word_core("Type STOP to go back to Player Menu...", 0.1)
     print("\n")
-    while True:  # Loop until stopped
+    while True:
         turn_fast()
-        inp = raw_input()  # Get the input
-        if inp == "STOP":  # Stop the process
+        inp = input(str())
+        if inp == "STOP":
             player_menu()
 
 def start_turn(): # The initial turn and story of the game
@@ -1510,17 +1467,17 @@ def start_turn(): # The initial turn and story of the game
     word_corez("@@@@                                                                                             @@@@\n")
     word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    raw_input("press ENTER to exit Magus...")
+    input(str("press ENTER to exit Magus..."))
     clear()
     player_menu()
 
-def clear(): # Clears the screen of old text
+def clear():
     if OS == "Windows":
         os.system("cls")
     else:
         os.system("clear")
 
-def Game_Over(): # Determines if you get a game over or not, includes victory
+def Game_Over():
     global infected
     global zombies
     global cure
@@ -1540,8 +1497,7 @@ def Game_Over(): # Determines if you get a game over or not, includes victory
     else:
         return
 
-def infected_game_over(): # Game over due to infected being dead
-    time2 = time.time()
+def infected_game_over():
     clear()
     word_core("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", 0.01)
     word_core("{      _____       ___     _     _    _____     ____     _      _   _____   ___     }\n", 0.01)
@@ -1560,24 +1516,12 @@ def infected_game_over(): # Game over due to infected being dead
     print("\n")
     word_corex("CURE COMPLETE |", "All infected have been cured and zombies quarentined....")
     print("\n")
-    global time1
-    end_time = int(time2 - time1)
-    print("\n")
-    word_corex("Time |", str(end_time) + " Seconds")
-    minutes = int(float(end_time) / 60)
-    print("\n")
-    word_corex("Time |", str(minutes) + " Minutes")
-    hours = int(float(minutes) / 60)
-    print("\n")
-    word_corex("Time |", str(hours) + " Hours")
-    print("\n")
-    raw_input("Press ENTER to continue....")
+    input(str("Press ENTER to continue...."))
     gc.collect()
     clear()
     os.system("python Main.py")
 
 def cured_game_over(): # You got cured
-    time2 = time.time()
     clear()
     word_core("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", 0.01)
     word_core("{      _____       ___     _     _    _____     ____     _      _   _____   ___     }\n", 0.01)
@@ -1591,24 +1535,12 @@ def cured_game_over(): # You got cured
     print("\n")
     word_corex("CURE COMPLETE |", "All infected have been cured and zombies quarentined....")
     print("\n")
-    global time1
-    end_time = int(time2 - time1)
-    print("\n")
-    word_corex("Time |", str(end_time) + " Seconds")
-    minutes = int(float(end_time) / 60)
-    print("\n")
-    word_corex("Time |", str(minutes) + " Minutes")
-    hours = int(float(minutes) / 60)
-    print("\n")
-    word_corex("Time |", str(hours) + " Hours")
-    print("\n")
-    raw_input("Press ENTER to continue....")
+    input(str("Press ENTER to continue...."))
     gc.collect()
     clear()
     os.system("python Main.py")
 
 def victory(): # Everyone dies
-    time2 = time.time()
     clear()
     word_core("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", 0.001)
     word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;';;;;;;;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
@@ -1697,18 +1629,7 @@ def victory(): # Everyone dies
     word_core("        @@'      @@   @@@@@@@@@@@      @@       @@@@@@@@@@#  @@     `@@@    @@@@@@@@@@\n", 0.001)
     print("\n")
     word_corex("VICTORY |", "All life on earth, except you and your select, have been exterminated")
-    global time1
-    end_time = int(time2 - time1)
-    print("\n")
-    word_corex("Time |", str(end_time) + " Seconds")
-    minutes = int(float(end_time) / 60)
-    print("\n")
-    word_corex("Time |", str(minutes) + " Minutes")
-    hours = int(float(minutes) / 60)
-    print("\n")
-    word_corex("Time |", str(hours) + " Hours")
-    print("\n")
-    raw_input("Press ENTER to continue....")
+    input(str("Press ENTER to continue...."))
     gc.collect()
     os.system("python Main.py")
 
@@ -1741,39 +1662,6 @@ def lux():
     word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     word_corez("@@@@                                                                                             @@@@\n")
     word_corez("@@@@                                                                                             @@@@\n")
-
-def mail():
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@ @          @; `@@@@@@@  `@@@@@@@@ ;@      @; @@@@@@@@                                       @@@")
-    print("@@@@ @@        @@+ @@:::::@@ @@::::::: ;@      @; @:::::::                                       @@@")
-    print("@@@@ @@@      @@@+ @      ;@ @# @@@@@@ ;@      @; @::::::                                        @@@")
-    print("@@@@ @ @@    @@ @+ @::::::+@ @# @@@@@@ ;@      @; @@@@@@@@.          @@@@@@@@@@@@@@@@@@          @@@")
-    print("@@@@ @  @@  @@  @+ @@@@@@@@@ @#      @ ;@      @;        @#         ` @@@@@@@@@@@@@@@@           @@@")
-    print("@@@@ @   @@#@   @+ @      ;@ @#      @ ;@      @;        @#         @` #@@@@@@@@@@@@@  @         @@@")
-    print("@@@@ @    @@    @+ @      ;@ +@@@@@@@@  @@@@@@@@  @@@@@@@@`         @@: '@@@@@@@@@@@  @@         @@@")
-    print("@@@@                                                                @@@' '@@@@@@@@@  @@@         @@@")
-    print("@@@@                                                                @@@@' :@@@@@@@  @@@@         @@@")
-    print("@@@@                                                                @@@@@# `@@@@@  @@@@@         @@@")
-    print("@@@@                                                                @@@@@@   @@@  `@@@@@         @@@")
-    print("@@@@                                                                @@@@@  @ `@ `@ `@@@@         @@@")
-    print("@@@@                   @;         #@  @@@@@@@. .@ :@                @@@@  @@@  `@@@  @@@         @@@")
-    print("@@@@                   @@:       +@@ @@:::::@@ .@ :@                @@@  @@@@@:@@@@@  @@         @@@")
-    print("@@@@                   @+@.     ;@+@ @+      @ .@ :@                @@  @@@@@@@@@@@@@  @         @@@")
-    print("@@@@                   @:;@`   :@.;@ @#::::::@ .@ :@                @  @@@@@@@@@@@@@@@           @@@")
-    print("@@@@                   @: +@` .@: ;@ @@@@@@@@@ .@ :@                 `@@@@@@@@@@@@@@@@@          @@@")
-    print("@@@@                   @:  +@`@:  ;@ @+      @ .@ :@                                             @@@")
-    print("@@@@                   @:   #@'   ;@ @+      @ .@ :@@@@@@                                        @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
 start_turn()
 
