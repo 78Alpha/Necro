@@ -1,6 +1,6 @@
 from __future__ import print_function
 import Globals
-import os, platform, time, random, gc, sys, threading, CLock
+import os, platform, time, random, gc, sys, threading
 
 # Operating system
 
