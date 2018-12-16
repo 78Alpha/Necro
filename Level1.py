@@ -1,16 +1,8 @@
-from __future__ import print_function
-import Globals
-import os, platform, time, random, gc, sys, threading #, subprocess
-
-# Game start time
-
-time1 = time.time()
-
-# Operating system
-
-OS = platform.system()
+import os, platform, time, secrets, gc, sys, threading, Globals, Clear, WordCore, Loading, UI, Graph, UniData, Generation
 
 #import parameters from a Globals.py file, allows for user customization of experience
+
+OS = platform.system()
 
 zombies = Globals.zombies
 dead = Globals.dead
@@ -45,75 +37,13 @@ rise = Globals.rise
 rise_price = Globals.rise_price
 gene = Globals.gene
 limit = Globals.limit
-
-def word_core(sen, sec): # Human-like typing
-    for letter in sen:
-        print(letter, end='')
-        sys.stdout.flush()  # Needed for Unix based systems
-        time.sleep(sec)
-
-def word_corex(stub, sen): # Human-like with a stationary starter
-    print(stub + " ", end='')
-    sys.stdout.flush()  # Needed for Unix based systems
-    time.sleep(0.5)
-    for letter in sen:
-        print(letter, end='')
-        sys.stdout.flush()  # Needed for Unix based systems
-        time.sleep(.01)
-
-def spinning_cursor():
-    while True:
-        for cursor in '|/-\\':
-            yield cursor
-def cursor():
-    spinner = spinning_cursor()
-    for _ in range(5):
-        sys.stdout.write(spinner.next())
-        sys.stdout.flush()
-        time.sleep(0.1)
-        sys.stdout.write('\b')
-
-def word_corez(sen): # Human-like typing
-    for letter in sen:
-        print(letter, end='')
-        sys.stdout.flush()  # Needed for Unix based systems
-        time.sleep(0.0008)
-
-def loading(stub,sub, sen, stubs):
-    print(stub, end='')
-    sys.stdout.flush()  # Needed for Unix based systems
-    for letter in sub:
-        print(letter, end='')
-        sys.stdout.flush()
-        time.sleep(0.1)
-    for letter in sen:
-        print(letter, end='')
-        sys.stdout.flush()
-        cursor()
-        time.sleep(.01)
-    print(stubs, end='')
-
-def word_corey(stub, sen, stubs): # Stationary title with a natural typing statement, needs to be 89 characters
-    marker = 0
-    print(stub, end='')
-    marker += int(len(stub))
-    sys.stdout.flush()  # Needed for Unix based systems
-    time.sleep(0.3)
-    for letter in sen:
-        print(letter, end='')
-        sys.stdout.flush()  # Needed for Unix based systems
-        marker += 1
-        time.sleep(.01)
-    #print(marker)
-    while marker != 97:
-        marker += 1
-        print(" ", end='')
-    #print(marker)
-    print(stubs, end='')
+color = UniData.color
 
 def check_cure_start(): #determines if cure research should start or not
-    global severity
-    global week
+    #global severity
+    #global week
+    severity = UniData.severity
+    week = UniData.week
     if severity >= 5:
         cure_value()
     elif week >= 20:
@@ -122,11 +52,15 @@ def check_cure_start(): #determines if cure research should start or not
         return
 
 def cure_value(): # How fast the cure will increase
-    global cure
+    cure = UniData.cure
+    infected = UniData.infected
+    severity = UniData.severity
+    lethality = UniData.lethality
+    #global cure
     cure += 5
-    global infected
-    global severity
-    global lethality
+    #global infected
+    #global severity
+    #global lethality
     cure_attack_value = float(infected)/healthy
     if cure_attack_value > 0.5:  # Determines how fast the cure will progress due to "fear"
         cure += int(float(cure) / 5)
@@ -138,252 +72,166 @@ def cure_value(): # How fast the cure will increase
     else:
         return
 
-def dna_weekly(): # Weekly supply of DNA for research, used for LAB purchases
-    global dna_points
-    dna_points += int(float(infected)/(1 + (healthy * 100)))
-    dna_random()
-    print("Research Points: " + str(dna_points))
-
-def dna_random(): # Random DNA per week, can determine victory or defeat
-    global dna_points
-    rand_value1 = random.randint(0, 10)
-    if rand_value1 > 4:
-        random_dna = random.randint(0, 3)
-        dna_points += int(random_dna)
-    else:
-        return
-
 def infecting_agent(): # Determines how many infections occur
-    global infected
+    #global infected
+    #global healthy
+    #global infectivity
+    #global lethality
+    infected = UniData.infected
+    healthy = UniData.healthy
+    infectivity = UniData.infectivity
+    lethality = UniData.lethality
     infected += 100
-    global infectivity
-    global lethality
+    healthy -= 100
     LETH = lethality
     inf_value = float(infectivity)/(1 + LETH) # Must be kept as int() + lethality, inflates lethality otherwise
     infected += int(inf_value)
-    global healthy
-    healthy -= 100
     healthy -= int(inf_value)
 
-def inf_graph(): # Visuals for population infection
-    global infected
-    global healthy
-    global limit
-    infect = int((float(infected)/limit)*100)
-    inf = "["
-    for i in range(infect):  # Visual for infection
-        inf += "O"
-    for i in range(100-int(infect)):  # Visual for non-infected
-        inf += "."
-    inf2 = str(inf) + "] " + str(infect) + "% Infected"
-    print("Population Infected")
-    print(inf2)
-    print("\n")
-    word_corex("Infected |", str(infected) + " People Infected")
-    print("\n")
-    time.sleep(1)
-
-def cure_progress(): #notifies if the cure is a threat or not
-    global cure_percent
-    cure_percent = (float(cure)/1000) * 100
-    cur_graph()
-    if cure_percent < int(10):  # Tells the player how much of a threat the cure currently is
-        print("The cure is not yet a threat\n")
-    elif cure_percent < int(25):
-        print("The cure is becoming an annoyance\n")
-    elif cure_percent < int(50):
-        print("A threat ensues\n")
-    elif cure_percent < int(75):
-        print("The cure is a threat\n")
-    elif cure_percent < int(90):
-        print("The cure has become a severe threat\n")
-    elif cure_percent < int(99):
-        print("You are screwed\n")
-    else:
-        print("You will see this message if an uncorrectable error has occurred")
-    time.sleep(1)
-
-def cur_graph(): #Displays the percent of cure completion
-    cur = "["
-    global cure_percent
-    curer = int(cure_percent)
-    for i in range(curer):  # percent to completion
-        cur += "O"
-    for i in range(100-int(curer)):  # Distance from completion
-        cur += "."
-    cur2 = str(cur) + "] " + str(curer) + "% Complete"
-    print("Cure Completion")
-    print(cur2)
-    print("\n")
-    time.sleep(1)
-
-def hea_graph(): # A graph for the amount of healthy people
-    hea = "["
-    global healthy
-    global limit
-    alive2 = (float(healthy)/limit)
-    if alive2 > .99:  #Quick fix for the "less than 100%" Bug
-        alive2 = 1
-    alive3 = int(alive2 * 100)
-    for i in range(alive3):  # Amount healthy
-        hea += "O"
-    for i in range(100 - int(alive3)):  # Amount not healthy
-        hea += "."
-    cur2 = str(hea) + "] " + str(alive3) + "% Healthy"
-    print("Healthy People")
-    print(cur2)
-    print("\n")
-    word_corex("Healthy |", str(healthy) + " People Healthy")
-    print("\n")
-    time.sleep(1)
-
-def dea_graph():
-    global dead
-    global limit
-    corpse = int((float(dead) / limit) * 100)
-    dea = "["
-    for i in range(corpse):  # Amount dead
-        dea += "O"
-    for i in range(100 - int(corpse)):  # Amount not dead
-        dea += "."
-    dea2 = str(dea) + "] " + str(corpse) + "% Dead"
-    print("Population Dead")
-    print(dea2)
-    print("\n")
-    word_corex("Dead |", str(dead) + " People Dead")
-    print("\n")
-    time.sleep(1)
-
-def zom_graph(): # Graph of zombies
-    global zombies
-    global limit
-    walkers = int((float(zombies) / limit) * 100)
-    zom = "["
-    for i in range(walkers):  # Are zombs
-        zom += "O"
-    for i in range(100 - int(walkers)):  # Are not zombs
-        zom += "."
-    zom2 = str(zom) + "] " + str(walkers) + "% Zombies"
-    print("Population Zombified")
-    print(zom2)
-    print("\n")
-    word_corex("Zombies |", str(zombies) + " People Zombified")
-    print("\n")
-    time.sleep(1)
-
-def graphical_analysis(): # Displays all world graphs
-    inf_graph()
-    hea_graph()
-    dea_graph()
-    zom_graph()
-    cure_progress()
-    print("\n")
-    raw_input("Press ENTER to continue...")
-    clear()
-    player_menu()
-
-def plague_status_graph(): # Displays all plague graphs
-    global infectivity
-    global severity
-    global lethality
-    global severity_limit
-    global lethality_limit
-    global infectivity_limit
-    tiv = "["
-    sev = "["
-    let = "["
-    status = int((float(infectivity) / infectivity_limit) * 100)
-    for i in range(status):
-        tiv += "O"
-    for i in range(100-int(status)):
-        tiv += "."
-    status2 = int((float(severity) / severity_limit) * 100)
-    for i in range(status2):
-        sev += "O"
-    for i in range(100-int(status2)):
-        sev += "."
-    status3 = int((float(lethality) / lethality_limit) * 100)
-    for i in range(status3):
-        let += "O"
-    for i in range(100-int(status3)):
-        let += "."
-    infective = str(tiv) + "] " + str(status) + "% To Infectivity Max"
-    severe = str(sev) + "] " + str(status2) + "% To Severity Max"
-    lethal = str(let) + "] " + str(status3) + "% To Lethality Max"
-    print("Infectivity Level")
-    print(infective)
-    print("\n")
-    time.sleep(1)
-    print("Severity Level")
-    print(severe)
-    print("\n")
-    time.sleep(1)
-    print("Lethality Level")
-    print(lethal)
-    print("\n")
-    time.sleep(1)
-    raw_input("Press ENTER to continue...")
-    clear()
-    player_menu()
-
 def enforce_value_maximums(): #Makes sure that maximum/minumum values are never violated
-    global infectivity
-    global dead
-    global severity
-    global lethality
-    global infected
-    global healthy
-    global zombies
-    global infectivity_limit
-    global severity_limit
-    global lethality_limit
-    global limit
-    #LETH = lethality
+    #global infectivity
+    #global dead
+    #global severity
+    #global lethality
+    #global infected
+    #global healthy
+    #global zombies
+    #global infectivity_limit
+    #global severity_limit
+    #global lethality_limit
+    #global limit
+    infectivity = UniData.infectivity
+    dead = UniData.dead
+    severity = UniData.severity
+    lethality = UniData.lethality
+    infected = UniData.infected
+    healthy = UniData.healthy
+    zombies = UniData.zombies
+    infectivity_limit = UniData.infectivity_limit
+    severity_limit = UniData.severity_limit
+    lethality_limit = UniData.lethality_limit
+    limit = UniData.limit
     if lethality > lethality_limit:
-        lethality = lethality_limit
+        #lethality = lethality_limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[10] = "lethality = " + str(lethality_limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if lethality < 0:
-        lethality = 0
+        #lethality = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[10] = "lethality = 0\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if infectivity > infectivity_limit: # Max value of infectivity
-        infectivity = infectivity_limit
+        #infectivity = infectivity_limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[6] = "infectivity = " + str(infectivity_limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if infectivity < 0: # Minimum level of infectivity
-        infectivity = 0
+        #infectivity = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[6] = "infectivity = 0\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if severity > severity_limit: # Max value of severity
-        severity = severity_limit
+        #severity = severity_limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[8] = "severity = " + str(severity_limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if severity < 0: # Minimum level of severity
-        severity = 0
+        #severity = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[8] = "severity = 0\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if infected > limit: # Max number of infected
-        infected = limit
+        #infected = limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[1] = "infected = " + str(limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if infected < 0: # Minimum number of infected
-        infected = 0
+        #infected = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[1] = "infected = 0\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if healthy < 0: # Minimum level of healthy
-        healthy = 0
+        #healthy = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[0] = "healthy = " + str(limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if healthy > limit: # Maximum number of healthy
-        healthy = limit
+        #healthy = limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[0] = "healthy = 0\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if dead > limit: # Max number of dead
-        dead = limit
+        #dead = limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[3] = "dead = " + str(limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if dead < 0: # Minimum number of dead
-        dead = 0
+        #dead = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[3] = "dead = 0\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if zombies > limit: # Max number of zombies
-        zombies = limit
+        #zombies = limit
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[2] = "zombies = " + str(limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
     if zombies < 0: # Minimum number of zombies
-        zombies = 0
+        #zombies = 0
+        with open('UniData.py', 'r') as file:
+            data = file.readlines()
+        data[2] = "zombies = " + str(limit) + "\n"
+        with open("UniData.py", 'w') as file:
+            file.writelines(data)
 
 def BURST_store_price(): # Changes burst store price depending on level
-    global burst
-    global burst_price
+    #global burst
+    #global burst_price
+    burst = UniData.burst
+    burst_price = UniData.burst_price
     if burst == 1:
         burst_price = "--"
     else:
         return
 
 def BURST_check(): #chekcs if burst is active and applies it every turn
-    global burst
+    #global burst
+    burst = UniData.burst
+    infectivity = UniData.infectivity
+    infected = UniData.infected
+    dead = UniData.dead
     if burst == 1:
-        global infectivity
-        global infected
-        global temp
+        #global infectivity
+        #global infected
+        #global temp
         temp = int(infected * 0.01)
-        global dead
+        #global dead
         if temp < 1:
             temp = 1
             infectivity += temp
@@ -397,83 +245,59 @@ def BURST_check(): #chekcs if burst is active and applies it every turn
         return
 
 def BURST_info(): #displays info about burst
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "@       ;#       .@       @", "@@@@\n")
-    word_corey("@@@@", "@       `@@     @@@       @", "@@@@\n")
-    word_corey("@@@@", "@        @@@@@@@@@+       @", "@@@@\n")
-    word_corey("@@@@", "@       .@  @@@, #@       @", "@@@@\n")
-    word_corey("@@@@", "@       @@   @   @@`      @", "@@@@\n")
-    word_corey("@@@@", "@      +@@       @`@      @", "@@@@\n")
-    word_corey("@@@@", "@      @@@       @@@:     @", "@@@@\n")
-    word_corey("@@@@", "@    `@@;         `@@;    @", "@@@@\n")
-    word_corey("@@@@", "@  ;@@@             @@@#  @", "@@@@\n")
-    word_corey("@@@@", "@    @@#           ,@@.   @", "@@@@\n")
-    word_corey("@@@@", "@     `@@@       +@@@     @", "@@@@\n")
-    word_corey("@@@@", "@      @;@       @ @      @", "@@@@\n")
-    word_corey("@@@@", "@       @@   `   @@;      @", "@@@@\n")
-    word_corey("@@@@", "@       +@  +@@  @@       @", "@@@@\n")
-    word_corey("@@@@", "@        @.@@.+@:@+       @", "@@@@\n")
-    word_corey("@@@@", "@        @@@@@@@@@@       @", "@@@@\n")
-    word_corey("@@@@", "@       ,@       @@       @", "@@@@\n")
-    word_corey("@@@@", "@       +         :       @", "@@@@\n")
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[0] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-Virus disables pressure regulation of host skull, following up with a forced intake","@@@@\n")
-    word_corey("@@@@", "  of pressurized oxygen until cranial rupture/explosion occurrs", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    if UniData.color != 0:
+        UI.Color_Burst()
+    else:
+        UI.BURST_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[0] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-Virus disables pressure regulation of host skull, following up with a forced intake","@@@@\n")
+    WordCore.word_corey("@@@@", "  of pressurized oxygen until cranial rupture/explosion occurrs", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def NECROSIS_store_price(): #checks to see if it can be bought/alters price
-    global necrosis
-    global necrosis_price
+    #global necrosis
+    #global necrosis_price
+    necrosis = UniData.necrosis
+    necrosis_price = UniData.necrosis_price
     if necrosis == 1:
         necrosis_price = "--"
     else:
         return
 
 def NECROSIS_check(): #chekcs if necrosis is active, will be run weekly to continue the rise on infectivity
-    global necrosis
+    #global necrosis
+    necrosis = UniData.necrosis
     if necrosis == 1:
-        global infectivity
-        global dead
-        global healthy
+        #global infectivity
+        #global dead
+        #global healthy
+        infectivity = UniData.infectivity
+        dead = UniData.dead
+        healthy = UniData.healthy
         infectivity += int(float(dead)/(1 + healthy))
     else:
         return
 
 def NECROSIS_info(): #Displays info about necrosis
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "@                         @", "@@@@\n")
-    word_corey("@@@@", "@    @@@           @@@    @", "@@@@\n")
-    word_corey("@@@@", "@   @. @'         @. @'   @", "@@@@\n")
-    word_corey("@@@@", "@   @  .@         @  .@   @", "@@@@\n")
-    word_corey("@@@@", "@   @@.@.         @@.@.   @", "@@@@\n")
-    word_corey("@@@@", "@    '@.           '@.    @", "@@@@\n")
-    word_corey("@@@@", "@                         @", "@@@@\n")
-    word_corey("@@@@", "@   `                '    @", "@@@@\n")
-    word_corey("@@@@", "@    @              '`    @", "@@@@\n")
-    word_corey("@@@@", "@     @`           '@     @", "@@@@\n")
-    word_corey("@@@@", "@     ,@@         @@      @", "@@@@\n")
-    word_corey("@@@@", "@      @@@@     +@@;      @", "@@@@\n")
-    word_corey("@@@@", "@       @@,@@@@@:@@       @", "@@@@\n")
-    word_corey("@@@@", "@        +@`    @@        @", "@@@@\n")
-    word_corey("@@@@", "@          @@@@@.         @", "@@@@\n")
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[1] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-virus enters a low power state while in a dead host, power is diverted to motion","@@@@\n")
-    word_corey("@@@@", "  sensors such that individuals within proximity will be attacked before reaction is possible", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.NECROSIS_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[1] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-virus enters a low power state while in a dead host, power is diverted to motion","@@@@\n")
+    WordCore.word_corey("@@@@", "  sensors such that individuals within proximity will be attacked before reaction is possible", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def WATER_store_price(): # Changes store price of water gene
-    global water
-    global water_price
+    #global water
+    #global water_price
+    water = UniData.water
+    water_price = UniData.water_price
     if water == 1:
         water_price += int(float(water_price) / 4)
     elif water == 2:
@@ -484,47 +308,31 @@ def WATER_store_price(): # Changes store price of water gene
         return
 
 def WATER_check(): #chekcs if water is active, will be run when bought
-    global water
-    global infectivity
-    global healthy
+    #global water
+    #global infectivity
+    #global healthy
+    water = UniData.water
+    infectivity = UniData.infectivity
+    #healthy = UniData.healthy
     if water == 1:
-        infectivity += int(healthy * 0.05)
+        infectivity += int(infected * 0.05)
     elif water == 2:
-        infectivity += int(healthy * 0.1)
+        infectivity += int(infected * 0.1)
     elif water == 3:
-        infectivity += int(healthy * 0.2)
+        infectivity += int(infected * 0.2)
     else:
         return
 
 def WATER_info(): #Displays info about water
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "@                         @", "@@@@\n")
-    word_corey("@@@@", "@        @+               @", "@@@@\n")
-    word_corey("@@@@", "@         @@              @", "@@@@\n")
-    word_corey("@@@@", "@         '@@             @", "@@@@\n")
-    word_corey("@@@@", "@          @+@            @", "@@@@\n")
-    word_corey("@@@@", "@          @ @.           @", "@@@@\n")
-    word_corey("@@@@", "@          @  @           @", "@@@@\n")
-    word_corey("@@@@", "@          @  ;@          @", "@@@@\n")
-    word_corey("@@@@", "@          @   @`         @", "@@@@\n")
-    word_corey("@@@@", "@          @    @         @", "@@@@\n")
-    word_corey("@@@@", "@         ++    @         @", "@@@@\n")
-    word_corey("@@@@", "@         @     @`        @", "@@@@\n")
-    word_corey("@@@@", "@        ,# @@@ ;;        @", "@@@@\n")
-    word_corey("@@@@", "@        @  @ @ ;;        @", "@@@@\n")
-    word_corey("@@@@", "@        @  @ @ +,        @", "@@@@\n")
-    word_corey("@@@@", "@        @  ,@@ @         @", "@@@@\n")
-    word_corey("@@@@", "@        #+    .@         @", "@@@@\n")
-    word_corey("@@@@", "@         @@@@@@          @", "@@@@\n")
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[2] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-Virus is given an instruction set to build waterproofing from genetic material,","@@@@\n")
-    word_corey("@@@@", "  can allow for the bypassing of filters with enough biological shielding", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.WATER_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[2] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-Virus is given an instruction set to build waterproofing from genetic material,","@@@@\n")
+    WordCore.word_corey("@@@@", "  can allow for the bypassing of filters with enough biological shielding", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def AIR_store_price(): # Changes air store price
     global air
@@ -554,38 +362,15 @@ def AIR_check(): #Activates when air is bought
         return
 
 def AIR_info(): #Displays info about air
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "@          `'@+;          @", "@@@@\n")
-    word_corey("@@@@", "@        #@@:`.'@@        @", "@@@@\n")
-    word_corey("@@@@", "@       @'       `@,      @", "@@@@\n")
-    word_corey("@@@@", "@     `@           @`     @", "@@@@\n")
-    word_corey("@@@@", "@     @             @     @", "@@@@\n")
-    word_corey("@@@@", "@    @;     `@@@    @,    @", "@@@@\n")
-    word_corey("@@@@", "@    @     +@  `@`   @    @", "@@@@\n")
-    word_corey("@@@@", "@   .@    `@ ;@  @   @    @", "@@@@\n")
-    word_corey("@@@@", "@   +.    @` @   @   @    @", "@@@@\n")
-    word_corey("@@@@", "@   @     @  @   @   @    @", "@@@@\n")
-    word_corey("@@@@", "@   @     @` @',@,  #:    @", "@@@@\n")
-    word_corey("@@@@", "@   @     `@  ;+    @     @", "@@@@\n")
-    word_corey("@@@@", "@   ':     @'      @`     @", "@@@@\n")
-    word_corey("@@@@", "@    @      @@, .@@`      @", "@@@@\n")
-    word_corey("@@@@", "@    @        +@+`        @", "@@@@\n")
-    word_corey("@@@@", "@    '+                   @", "@@@@\n")
-    word_corey("@@@@", "@     @                   @", "@@@@\n")
-    word_corey("@@@@", "@     `@                  @", "@@@@\n")
-    word_corey("@@@@", "@      ,@                 @", "@@@@\n")
-    word_corey("@@@@", "@       .@,               @", "@@@@\n")
-    word_corey("@@@@", "@         @@;             @", "@@@@\n")
-    word_corey("@@@@", "@           '@            @", "@@@@\n")
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[3] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-Virus begins to cut thin sllices of skin from the host to act as a parachute,","@@@@\n")
-    word_corey("@@@@", "  carrying itself long distances via updrafts", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.AIR_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[3] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-Virus begins to cut thin sllices of skin from the host to act as a parachute,","@@@@\n")
+    WordCore.word_corey("@@@@", "  carrying itself long distances via updrafts", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def BLOOD_store_price(): # Changes blood price
     global blood
@@ -617,39 +402,16 @@ def BLOOD_check(): # Will be run when bought to apply effects
         return
 
 def BLOOD_info(): # Displays info about blood
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "@ @                     ''@", "@@@@\n")
-    word_corey("@@@@", "@ '@                   '@ @", "@@@@\n")
-    word_corey("@@@@", "@  '@                 '@  @", "@@@@\n")
-    word_corey("@@@@", "@   '@               '@   @", "@@@@\n")
-    word_corey("@@@@", "@    '@             '@    @", "@@@@\n")
-    word_corey("@@@@", "@     '@'@       '@'@     @", "@@@@\n")
-    word_corey("@@@@", "@      '@         +@      @", "@@@@\n")
-    word_corey("@@@@", "@  '                   '  @", "@@@@\n")
-    word_corey("@@@@", "@  '@                 '@  @", "@@@@\n")
-    word_corey("@@@@", "@   '@               '@   @", "@@@@\n")
-    word_corey("@@@@", "@    '@             '@    @", "@@@@\n")
-    word_corey("@@@@", "@     '@           '@     @", "@@@@\n")
-    word_corey("@@@@", "@      '@ @     @ '@      @", "@@@@\n")
-    word_corey("@@@@", "@       '@'      @@       @", "@@@@\n")
-    word_corey("@@@@", "@   '    :            '   @", "@@@@\n")
-    word_corey("@@@@", "@   '@               '@   @", "@@@@\n")
-    word_corey("@@@@", "@    '@             '@    @", "@@@@\n")
-    word_corey("@@@@", "@     '@           '@     @", "@@@@\n")
-    word_corey("@@@@", "@      '@         '@      @", "@@@@\n")
-    word_corey("@@@@", "@       '@ @   @ '@       @", "@@@@\n")
-    word_corey("@@@@", "@        '@'    @@        @", "@@@@\n")
-    word_corey("@@@@", "@         ,               @", "@@@@\n")
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[4] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-Virus attaches drone colonies to blood cells, both red and white, weakening the","@@@@\n")
-    word_corey("@@@@", "  hosts immune system and capability to fight back. Transmission Becomes possible through", "@@@@\n")
-    word_corey("@@@@", "  contact with blood, but only on an open wound or intake","@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ",influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.BLOOD_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[4] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-Virus attaches drone colonies to blood cells, both red and white, weakening the","@@@@\n")
+    WordCore.word_corey("@@@@", "  hosts immune system and capability to fight back. Transmission Becomes possible through", "@@@@\n")
+    WordCore.word_corey("@@@@", "  contact with blood, but only on an open wound or intake","@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ",influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def SALIVA_store_price(): # Changes saliva price
     global saliva
@@ -680,31 +442,15 @@ def SALIVA_check(): # checks and applies saliva when bought
         return
 
 def SALIVA_info(): # Shows saliva info
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "@                         @", "@@@@\n")
-    word_corey("@@@@", "@  '`                 `'  @", "@@@@\n")
-    word_corey("@@@@", "@   @'               .@   @", "@@@@\n")
-    word_corey("@@@@", "@    @@`            @@    @", "@@@@\n")
-    word_corey("@@@@", "@      @@,        +@;     @", "@@@@\n")
-    word_corey("@@@@", "@      @ #@@@@@@@@;@      @", "@@@@\n")
-    word_corey("@@@@", "@      @     @     @      @", "@@@@\n")
-    word_corey("@@@@", "@      ';    @     @      @", "@@@@\n")
-    word_corey("@@@@", "@       @    @    :+      @", "@@@@\n")
-    word_corey("@@@@", "@  @#   @    @    @   +@  @", "@@@@\n")
-    word_corey("@@@@", "@   #@  #'   @   .@  @@   @", "@@@@\n")
-    word_corey("@@@@", "@    `@@ @   @   @ .@'    @", "@@@@\n")
-    word_corey("@@@@", "@      ,@@@, @ ,@'@@      @", "@@@@\n")
-    word_corey("@@@@", "@         +@@@@@@;        @", "@@@@\n")
-    word_corey("@@@@", "@                         @", "@@@@\n")
-    word_corey("@@@@", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[5] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-Virus replicates in salivary glands, transmitting itself through touch with food,","@@@@\n")
-    word_corey("@@@@", "  Drink, or human contact", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.SALIVA_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[5] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-Virus replicates in salivary glands, transmitting itself through touch with food,","@@@@\n")
+    WordCore.word_corey("@@@@", "  Drink, or human contact", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def ZOMBIFY_store_price(): # Changes store price of zombify
     global zombify
@@ -739,7 +485,7 @@ def ZOMBIFY_check(): # Applied weekly
         infected += o
         m = int(float(zomb_limb * 100 * (float(healthy) / 100)) / 100)
         dead += m
-        cure_burst = random.randint(1, 100)
+        cure_burst = secrets.choice(range(1, 100))
         healthy -= z + o + m
         if cure_burst >= 98:
             cure -= int(float(cure) / 10)
@@ -749,35 +495,15 @@ def ZOMBIFY_check(): # Applied weekly
         return
 
 def ZOMBIFY_info(): # Explains what zombify is
-    word_corey("@@@@  ", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@  ", "@                         @", "@@@@\n")
-    word_corey("@@@@  ", "@   @'  .@       @@@@.    @", "@@@@\n")
-    word_corey("@@@@  ", "@    @';@       @:   @    @", "@@@@\n")
-    word_corey("@@@@  ", "@     @@        @    @    @", "@@@@\n")
-    word_corey("@@@@  ", "@    @@@'       @    @    @", "@@@@\n")
-    word_corey("@@@@  ", "@    +  @'      '@  :@    @", "@@@@\n")
-    word_corey("@@@@  ", "@                '@@@     @", "@@@@\n")
-    word_corey("@@@@  ", "@                         @", "@@@@\n")
-    word_corey("@@@@  ", "@                         @", "@@@@\n")
-    word_corey("@@@@  ", "@                         @", "@@@@\n")
-    word_corey("@@@@  ", "@  ,'                 '   @", "@@@@\n")
-    word_corey("@@@@  ", "@   @@               @@   @", "@@@@\n")
-    word_corey("@@@@  ", "@   @+@`            @#@   @", "@@@@\n")
-    word_corey("@@@@  ", "@   ;+.@@`        @@`@    @", "@@@@\n")
-    word_corey("@@@@  ", "@    @@  @@@#++@@@.@;@    @", "@@@@\n")
-    word_corey("@@@@  ", "@    @:  @ @..@.@   @;    @", "@@@@\n")
-    word_corey("@@@@  ", "@        '@    @@         @", "@@@@\n")
-    word_corey("@@@@  ", "@         ,    :@         @", "@@@@\n")
-    word_corey("@@@@  ", "@                         @", "@@@@\n")
-    word_corey("@@@@  ", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[6] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-Virus burrows into brainstem and hijacks the hosts nervous system. The electrical","@@@@\n")
-    word_corey("@@@@", "  surge of the virus has the potential to bring even the most severely wounded back to life", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.ZOMBIFY_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[6] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-Virus burrows into brainstem and hijacks the hosts nervous system. The electrical","@@@@\n")
+    WordCore.word_corey("@@@@", "  surge of the virus has the potential to bring even the most severely wounded back to life", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def RISE_store_price(): # Changes rise store price
     global rise
@@ -847,33 +573,16 @@ def RISE_check(): # Applies effect when bought
         return
 
 def RISE_info(): # more info
-    word_corey("@@@@  ", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@  ", "@                         @", "@@@@\n")
-    word_corey("@@@@  ", "@                 .       @", "@@@@\n")
-    word_corey("@@@@  ", "@              @@@+@@     @", "@@@@\n")
-    word_corey("@@@@  ", "@            @@.    `@    @", "@@@@\n")
-    word_corey("@@@@  ", "@           @'.      @.   @", "@@@@\n")
-    word_corey("@@@@  ", "@          @,  ,      @   @", "@@@@\n")
-    word_corey("@@@@  ", "@         @'   @      @   @", "@@@@\n")
-    word_corey("@@@@  ", "@        @'#   ,@     @   @", "@@@@\n")
-    word_corey("@@@@  ", "@       @;  ;   @;    @   @", "@@@@\n")
-    word_corey("@@@@  ", "@      @,   @   ,@@   @   @", "@@@@\n")
-    word_corey("@@@@  ", "@    `@`    '@   @`@@'@   @", "@@@@\n")
-    word_corey("@@@@  ", "@    `@`    '@   @`@@'@   @", "@@@@\n")
-    word_corey("@@@@  ", "@   .@@@@@#  @,  @   '@   @", "@@@@\n")
-    word_corey("@@@@  ", "@  ,@+    @+ @@. @        @", "@@@@\n")
-    word_corey("@@@@  ", "@          @@@ @@+        @", "@@@@\n")
-    word_corey("@@@@  ", "@           `             @", "@@@@\n")
-    word_corey("@@@@  ", "@@@@@@@@@@@@@@@@@@@@@@@@@@@", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  ", "<<" + gene[7] + ">>", "@@@@\n")
-    word_corey("@@@@", "  Nano-virus attaches to all vital organs of corpses and applies rapid surges to bring", "@@@@\n")
-    word_corey("@@@@", "  Them to a semi-living state, the energy drain takes away from the ability to", "@@@@\n")
-    word_corey("@@@@", "  Turna non-hijacked host into a zombie but will bring back infected persons", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@  Affects: ", influence[1], "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    UI.RISE_icon()
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + gene[7] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Nano-virus attaches to all vital organs of corpses and applies rapid surges to bring", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Them to a semi-living state, the energy drain takes away from the ability to", "@@@@\n")
+    WordCore.word_corey("@@@@", "  Turna non-hijacked host into a zombie but will bring back infected persons", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", influence[1], "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
 def attribute_menu(): # This is the lab, where all genes are synthed and researched
     global burst
@@ -888,92 +597,82 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
     global severity
     global lethality
     global infectivity
-    clear()
-    lux()
-    word_corez("@@@@  Welcome back to your lab!                                                                  @@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corey("@@@@ >>> EVOLVE | ", "Research genes to inject into your virus", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("EVOLVE |", "Research genes to inject into your virus")
-    #print("\n")
-    word_corey("@@@@ >>> LEVEL | ", "Check the research level of gene paths", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("LEVEL |", "Check the research level of gene paths")
-    #print("\n")
-    word_corey("@@@@ >>> INFO | ", "Study the possible gene paths", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("INFO |", "Study the possible gene paths")
-    #print("\n")
-    word_corey("@@@@ >>> LEAVE | ", "Leave your lab", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    #word_corex("LEAVE |", "Leave your lab")
-    #print("\n")
-    decide = raw_input("Command: ")
+    Clear.clear()
+    UI.lux()
+    WordCore.word_corez("@@@@  Welcome back to your lab!                                                                  @@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@ >>> EVOLVE | ", "Research genes to inject into your virus", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@ >>> LEVEL | ", "Check the research level of gene paths", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@ >>> INFO | ", "Study the possible gene paths", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corey("@@@@ >>> LEAVE | ", "Leave your lab", "@@@@\n")
+    WordCore.word_corey("@@@@", "", "@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    decide = input(str("Command: "))
     if decide == "INFO":
-        clear()
-        lux()
+        Clear.clear()
+        UI.lux()
         BURST_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         NECROSIS_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         WATER_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         AIR_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         BLOOD_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         SALIVA_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         ZOMBIFY_info()
-        raw_input("Press ENTER to continue...")
-        clear()
-        lux()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
+        UI.lux()
         RISE_info()
-        raw_input("Press ENTER to continue...")
-        clear()
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
         attribute_menu()
     elif decide == "LEVEL":
-        clear()
-        lux()
-        word_corey("@@@@","  Burst Level: " + str(burst), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Necrosis Level: " + str(necrosis), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Water Level: " + str(water), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Air Level: " + str(air), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Blood Level: " + str(blood), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Saliva Level: " + str(saliva), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Zombify Level: " + str(zombify), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  Rise Level: " + str(rise), "@@@@\n")
-        word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-        word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-        raw_input("Press ENTER to continue...")
-        clear()
+        Clear.clear()
+        UI.lux()
+        WordCore.word_corey("@@@@","  Burst Level: " + str(burst), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Necrosis Level: " + str(necrosis), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Water Level: " + str(water), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Air Level: " + str(air), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Blood Level: " + str(blood), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Saliva Level: " + str(saliva), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Zombify Level: " + str(zombify), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  Rise Level: " + str(rise), "@@@@\n")
+        WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+        WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+        input(str("Press ENTER to continue..."))
+        Clear.clear()
         attribute_menu()
     elif decide == "EVOLVE":
-        clear()
-        lux()
-        #word_core("Here is what you can synthesize...", 0.05)
-        #print("\n")
+        Clear.clear()
+        UI.lux()
         BURST_store_price()
         NECROSIS_store_price()
         WATER_store_price()
@@ -991,328 +690,307 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
         global saliva_price
         global zombify_price
         global rise_price
-        word_corey("@@@@", "  " + gene[0] + " | Research Cost: " + str(burst_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[1] + " | Research Cost: " + str(necrosis_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[2] + " | Research Cost: " + str(water_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[3] + " | Research Cost: " + str(air_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[4] + " | Research Cost: " + str(blood_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[5] + " | Research Cost: " + str(saliva_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[6] + " | Research Cost: " + str(zombify_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@", "  " + gene[7] + " | Research Cost: " + str(rise_price), "@@@@\n")
-        word_corey("@@@@", "", "@@@@\n")
-        word_corey("@@@@  RESEARCH POINTS | ", str(dna_points), "@@@@\n")
-        word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-        word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-        evo = raw_input("Synthesize: ")
-        if evo == gene[0]:  # BURST buy menu and initial effects that won't happen recursively // passive
+        WordCore.word_corey("@@@@", "  " + gene[0] + " | Research Cost: " + str(burst_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[1] + " | Research Cost: " + str(necrosis_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[2] + " | Research Cost: " + str(water_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[3] + " | Research Cost: " + str(air_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[4] + " | Research Cost: " + str(blood_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[5] + " | Research Cost: " + str(saliva_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[6] + " | Research Cost: " + str(zombify_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + gene[7] + " | Research Cost: " + str(rise_price), "@@@@\n")
+        WordCore.word_corey("@@@@", "", "@@@@\n")
+        WordCore.word_corey("@@@@  RESEARCH POINTS | ", str(dna_points), "@@@@\n")
+        WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+        WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+        evo = input(str("Synthesize: "))
+        if evo == gene[0]:
             if burst_price != '--':
                 if dna_points >= burst_price:
-                    clear()
+                    Clear.clear()
                     burst += 1
                     lethality += 3
                     severity += 25
                     dna_points -= burst_price
-                    word_corex(gene[0] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[0] + " |", "Successfully synthesized!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= burst_price:
-                    clear()
-                    word_corex(gene[0] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[0] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[1]:  # // passive
             if necrosis_price != '--':
                 if dna_points >= necrosis_price:
-                    clear()
+                    Clear.clear()
                     necrosis += 1
                     severity += 10
                     dna_points -= necrosis_price
-                    word_corex(gene[1] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[1] + " |", "Successfully synthesized!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= necrosis_price:
-                    clear()
-                    word_corex(gene[1] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[1] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[2]:
             if water_price != '--':
                 if dna_points >= water_price:
-                    clear()
+                    Clear.clear()
                     water += 1
                     dna_points -= water_price
-                    word_corex(gene[2] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[2] + " |", "Successfully synthesized!")
                     WATER_check()
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= water_price:
-                    clear()
-                    word_corex(gene[2] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[2] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[3]:
             if air_price != '--':
                 if dna_points >= air_price:
-                    clear()
+                    Clear.clear()
                     air += 1
                     dna_points -= air_price
-                    word_corex(gene[3] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[3] + " |", "Successfully synthesized!")
                     AIR_check()
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= air_price:
-                    clear()
-                    word_corex(gene[3] + " |", "Synthesis Failed!")
+                    clear.clear()
+                    WordCore.word_corex(gene[3] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[4]:
             if blood_price != '--':
                 if dna_points >= blood_price:
-                    clear()
+                    Clear.clear()
                     blood += 1
                     dna_points -= blood_price
-                    word_corex(gene[4] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[4] + " |", "Successfully synthesized!")
                     BLOOD_check()
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= blood_price:
-                    clear()
-                    word_corex(gene[4] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[4] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[5]:
             if saliva_price != '--':
                 if dna_points >= saliva_price:
-                    clear()
+                    Clear.clear()
                     saliva += 1
                     dna_points -= saliva_price
-                    word_corex(gene[5] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[5] + " |", "Successfully synthesized!")
                     SALIVA_check()
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= saliva_price:
-                    clear()
-                    word_corex(gene[5] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[5] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[6]:  # // passive
             if zombify_price != '--':
                 if dna_points >= zombify_price:
-                    clear()
+                    Clear.clear()
                     zombify += 1
                     dna_points -= zombify_price
-                    word_corex(gene[6] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[6] + " |", "Successfully synthesized!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= zombify_price:
-                    clear()
-                    word_corex(gene[6] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[6] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         elif evo == gene[7]:
             if rise_price != '--':
                 if dna_points >= rise_price:
-                    clear()
+                    Clear.clear()
                     rise += 1
                     dna_points -= rise_price
-                    word_corex(gene[7] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(gene[7] + " |", "Successfully synthesized!")
                     RISE_check()
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 elif dna_points <= rise_price:
-                    clear()
-                    word_corex(gene[6] + " |", "Synthesis Failed!")
+                    Clear.clear()
+                    WordCore.word_corex(gene[6] + " |", "Synthesis Failed!")
                     time.sleep(2)
-                    clear()
+                    Clear.clear()
                     attribute_menu()
                 else:
                     attribute_menu()
             else:
-                clear()
-                word_core("There is nothing more to research on this gene...", 0.01)
+                Clear.clear()
+                WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
         else:
             attribute_menu()
     elif decide == "LEAVE":
-        clear()
+        Clear.clear()
         print("Goodbye!\n")
         time.sleep(0.4)
-        clear()
+        Clear.clear()
         player_menu()
     else:
-        clear()
+        Clear.clear()
         attribute_menu()
 
 def exit_game(): # Gotta quit sometime, right?
-    clear()
-    word_core("You have chosen to exit the game... Are you sure? [y]/[n]", 0.05)
+    Clear.clear()
+    WordCore.word_core("You have chosen to exit the game... Are you sure? [y]/[n]", 0.05)
     print("\n")
-    ans = raw_input() #May show in error in Pycharm, this is due to the fact it thinks it's Python 3 but it's really Python 2.7
+    ans = input(str())
     print("\n")
     if ans == "Y" or ans == "y" or ans == "Yes" or ans == "yes" or ans == "YES":
-        word_core("Exiting game...", 0.05)
+        WordCore.word_core("Exiting game...", 0.05)
         print("\n")
-        clear()
+        Clear.clear()
         exit()
     elif ans == "n" or ans == "N" or ans == "no" or ans == "NO" or ans == "No":
-        word_core("Not Exiting The Game...", 0.05)
+        WordCore.word_core("Not Exiting The Game...", 0.05)
         print("\n")
-        clear()
+        Clear.clear()
         player_menu()
     else:
         exit_game()
 
-def player_menu(): #allows player to choose what they will do
-    clear()
-    lux()
-    #word_corey("@@@@", "What are your plans for this week?", "@@@@")
-    #print("\n")
-    word_corey("@@@@", "  Week: " + str(week), "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_core("Week: " + str(week), 0.05)
-    #print("\n")
-    word_corey("@@@@ >>> WORLD | ", "View world data", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("WORLD |", "View world data")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> VIRUS | ", "View nano-virus data", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("VIRUS |", "View nano-virus data")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> LAB | ", "Work on your virus in the lab", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("LAB |", "Work on your virus in the lab")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> TURN | ", "Move onto the next week", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("TURN |", "Move onto the next week")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> FAST | ", "Enter fast turn mode", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("FAST |", "Enter fast turn mode")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> SAVE | ", "Save your progress", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("SAVE |", "Save your progress")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> LOAD | ", "Load a previous save", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    #word_corex("LOAD |", "Load a previous save")
-    #print("\n")
-    #time.sleep(0.3)
-    word_corey("@@@@ >>> EXIT | ", "Quit the game without saving", "@@@@\n")
-    word_corey("@@@@", "", "@@@@\n")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    #word_corex("EXIT |", "Quit the game without saving")
-    #print("\n")
-    answer = raw_input("Command: ")
+def player_menu():
+    Clear.clear()
+    #UI.lux()
+    if UniData.color != 0:
+        UI.Color_lux()
+        UI.Color_player_menu_UI()
+    else:
+        UI.lux()
+        UI.player_menu_UI()
+    #WordCore.word_corey("@@@@", "  Week: " + str(week), "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> WORLD | ", "View world data", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> VIRUS | ", "View nano-virus data", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> LAB | ", "Work on your virus in the lab", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> TURN | ", "Move onto the next week", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> FAST | ", "Enter fast turn mode", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> SAVE | ", "Save your progress", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> LOAD | ", "Load a previous save", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #WordCore.word_corey("@@@@ >>> EXIT | ", "Quit the game without saving", "@@@@\n")
+    #WordCore.word_corey("@@@@", "", "@@@@\n")
+    #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    answer = input(str("Command: "))
     if answer == "WORLD":
-        clear()
-        graphical_analysis()
+        Clear.clear()
+        Graph.graphical_analysis()
     elif answer == "VIRUS":
-        clear()
-        plague_status_graph()
+        Clear.clear()
+        Graph.plague_status_graph()
     elif answer == "LAB":
-        clear()
+        Clear.clear()
         attribute_menu()
     elif answer == "TURN":
-        clear()
+        Clear.clear()
         turn()
     elif answer == "FAST":
-        clear()
+        Clear.clear()
         fast_turn()
     elif answer == "SAVE":
-        clear()
+        Clear.clear()
         delete()
         save()
     elif answer == "LOAD":
-        clear()
+        Clear.clear()
         load()
     elif answer == "EXIT":
-        clear()
+        Clear.clear()
         exit_game()
     else:
         player_menu()
 
-def save(): # Allows the player to save the game
+def save():
     with open("Save_file.py", "a") as file:
         file.write("healthy = " + str(healthy) + "\n")
         file.write("infected = " + str(infected) + "\n")
@@ -1320,7 +998,6 @@ def save(): # Allows the player to save the game
         file.write("dead = " + str(dead) + "\n")
         file.write("cure = " + str(cure) + "\n")
         file.write("week = " + str(week) + "\n")
-        file.write("influence = " + str(influence) + "\n")
         file.write("infectivity = " + str(infectivity) + "\n")
         file.write("infectivity_limit = " + str(infectivity_limit) + "\n")
         file.write("severity = " + str(severity) + "\n")
@@ -1340,22 +1017,21 @@ def save(): # Allows the player to save the game
         file.write("saliva = " + str(saliva) + "\n")
         file.write("zombify = " + str(zombify) + "\n")
         file.write("rise = " + str(rise) + "\n")
-        file.write("gene = " + str(gene) + "\n")
         file.write("limit = int(" + str(healthy) + " + " + str(infected) + " + " + str(dead) + " + " + str(zombies) + ")\n")
-        file.write("time1 = float( " + str(time1) + ")\n")  # May need to change to single session, time overflow may read negative time
-    clear()
-    word_corex("SAVING |", "Save completed successfully")
+        file.write("old = int(1)\n")
+    Clear.clear()
+    WordCore.word_corex("SAVING |", "Save completed successfully")
     time.sleep(2)
-    clear()
+    Clear.clear()
     player_menu()
 
-def delete(): # Deletes old save to make anew one, will corrupt the game if not run before new save is made
+def delete():
     if OS == "Windows":
         os.system("del Save_file.py")
     else:
         os.system("rm Save_file.py")
 
-def load(): # Load your save file
+def load():
     import Save_file as load
     global zombies
     zombies = load.zombies
@@ -1409,18 +1085,18 @@ def load(): # Load your save file
     limit = load.limit
     global q
     q = load.q
-    word_corex("LOADING |", "Loading complete...")
+    WordCore.word_corex("LOADING |", "Loading complete...")
     player_menu()
 
-def turn(): #changes the week number for progression
-    clear()
+def turn():
+    Clear.clear()
     global week
     week += 1
-    word_core("A new week has come...", 0.1)
+    WordCore.word_core("A new week has come...", 0.01)
     print("\n")
     print("Week Number: " + str(week))
-    time.sleep(1)
-    dna_weekly()
+    #time.sleep(1)
+    Generation.dna_weekly()
     infecting_agent()
     check_cure_start()
     BURST_check()
@@ -1428,99 +1104,102 @@ def turn(): #changes the week number for progression
     ZOMBIFY_check()
     enforce_value_maximums()
     print("\n")
+    Graph.graphical_analysis_mini()
+    #input("See a Graph?")
+    UniWrite()
+    time.sleep(3)
     player_menu()
 
-def turn_fast(): # Second function of turn that will be changed for fast_turn if necessary
-    clear()
+def turn_fast():
+    Clear.clear()
     global week
     week += 1
     print("A new week has come...")
     print("\n")
     print("Week Number: " + str(week))
-    dna_weekly()
+    Generation.dna_weekly()
     infecting_agent()
     check_cure_start()
     BURST_check()
     NECROSIS_check()
     ZOMBIFY_check()
     enforce_value_maximums()
+    UniWrite()
     Game_Over()
     print("\n")
 
-def fast_turn(): # A faster version of turn for the early game where nothing happens
-    word_core("Press ENTER to take a turn...", 0.1)
+def fast_turn():
+    WordCore.word_core("Press ENTER to take a turn...", 0.1)
     print("\n")
-    word_core("Type STOP to go back to Player Menu...", 0.1)
+    WordCore.word_core("Type STOP to go back to Player Menu...", 0.1)
     print("\n")
-    while True:  # Loop until stopped
+    while True:
         turn_fast()
-        inp = raw_input()  # Get the input
-        if inp == "STOP":  # Stop the process
+        inp = input(str())
+        if inp == "STOP":
             player_menu()
 
-def start_turn(): # The initial turn and story of the game
-    clear()
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@ @          @; `@@@@@@@  `@@@@@@@@ ;@      @; @@@@@@@@                                       @@@@\n")
-    word_corez("@@@@ @@        @@+ @@:::::@@ @@::::::: ;@      @; @:::::::                                       @@@@\n")
-    word_corez("@@@@ @@@      @@@+ @      ;@ @# @@@@@@ ;@      @; @::::::                                        @@@@\n")
-    word_corez("@@@@ @ @@    @@ @+ @::::::+@ @# @@@@@@ ;@      @; @@@@@@@@.          @@@@@@@@@@@@@@@@@@          @@@@\n")
-    word_corez("@@@@ @  @@  @@  @+ @@@@@@@@@ @#      @ ;@      @;        @#         ` @@@@@@@@@@@@@@@@           @@@@\n")
-    word_corez("@@@@ @   @@#@   @+ @      ;@ @#      @ ;@      @;        @#         @` #@@@@@@@@@@@@@  @         @@@@\n")
-    word_corez("@@@@ @    @@    @+ @      ;@ +@@@@@@@@  @@@@@@@@  @@@@@@@@`         @@: '@@@@@@@@@@@  @@         @@@@\n")
-    word_corez("@@@@                                                                @@@' '@@@@@@@@@  @@@         @@@@\n")
-    word_corez("@@@@                                                                @@@@' :@@@@@@@  @@@@         @@@@\n")
-    word_corez("@@@@                                                                @@@@@# `@@@@@  @@@@@         @@@@\n")
-    word_corez("@@@@                                                                @@@@@@   @@@  `@@@@@         @@@@\n")
-    word_corez("@@@@                                                                @@@@@  @ `@ `@ `@@@@         @@@@\n")
-    word_corez("@@@@                   @;         #@  @@@@@@@. .@ :@                @@@@  @@@  `@@@  @@@         @@@@\n")
-    word_corez("@@@@                   @@:       +@@ @@:::::@@ .@ :@                @@@  @@@@@:@@@@@  @@         @@@@\n")
-    word_corez("@@@@                   @+@.     ;@+@ @+      @ .@ :@                @@  @@@@@@@@@@@@@  @         @@@@\n")
-    word_corez("@@@@                   @:;@`   :@.;@ @#::::::@ .@ :@                @  @@@@@@@@@@@@@@@           @@@@\n")
-    word_corez("@@@@                   @: +@` .@: ;@ @@@@@@@@@ .@ :@                 `@@@@@@@@@@@@@@@@@          @@@@\n")
-    word_corez("@@@@                   @:  +@`@:  ;@ @+      @ .@ :@                                             @@@@\n")
-    word_corez("@@@@                   @:   #@'   ;@ @+      @ .@ :@@@@@@                                        @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@          LeyCone@sidramail.gam             TO              MadLab@Magus.org                 @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corey("@@@@ >>>", "Hello, Doctor, I see the project is going smoothly...","@@@@\n")
-    word_corey("@@@@ >>>", "5/19/XX", "@@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corey("@@@@ >>>", "The Nano-Virus you've been working on finally managed to infect someone", "@@@@\n")
-    word_corey("@@@@ >>>", "Make sure to keep control, we wouldn't want you to die prematurely on us, now would we?", "@@@@\n")
-    word_corey("@@@@ >>>", "9/04/XX", "@@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corey("@@@@ >>>", "I assure you that you, your family, and whomever else you so wish will be kept safe, so","@@@@\n")
-    word_corey("@@@@ >>>", "Worry not. Now, without further ado, let us begin the transition to a new age!","@@@@\n")
-    word_corey("@@@@ >>>", "9/012/XX", "@@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    raw_input("press ENTER to exit Magus...")
-    clear()
-    player_menu()
+def Save_Check():
+    try:
+        import Save_file
+        if Save_file.old == 1:
+            with open("Save_File.py", 'r') as f:
+                d = f.readlines()
+            os.system("rm UniData.py")
+            with open("UniData.py", 'w') as f2:
+                f2.writelines(d)
+            f.close()
+            f2.close()
+            Clear.clear()
+            player_menu()
+        else:
+            #data = ''
+            with open("UniData.py", 'r') as file:
+                data = file.readlines()
+            with open("UniData.bak", 'w') as file2:
+                file2.writelines(data)
+            file.close()
+            file2.close()
+            os.system("rm UniData.py")
+            with open("Globals.py", 'r') as file3:
+                datax = file3.readlines()
+            with open("UniData.py", 'w') as file4:
+                file4.writelines(datax)
+            file3.close()
+            file4.close()
+            start_turn()
+    except ImportError:
+        start_turn()
 
-def clear(): # Clears the screen of old text
-    if OS == "Windows":
-        os.system("cls")
-    else:
-        os.system("clear")
+def start_turn():
+    Clear.clear()
+    UI.mail()
+    WordCore.word_corez("@@@@          LeyCone@sidramail.gam             TO              MadLab@Magus.org                 @@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    Loading.loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    WordCore.word_corey("@@@@ >>>", "Hello, Doctor, I see the project is going smoothly...","@@@@\n")
+    WordCore.word_corey("@@@@ >>>", "5/19/XX", "@@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    Loading.loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    WordCore.word_corey("@@@@ >>>", "The Nano-Virus you've been working on finally managed to infect someone", "@@@@\n")
+    WordCore.word_corey("@@@@ >>>", "Make sure to keep control, we wouldn't want you to die prematurely on us, now would we?", "@@@@\n")
+    WordCore.word_corey("@@@@ >>>", "9/04/XX", "@@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    Loading.loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    WordCore.word_corey("@@@@ >>>", "I assure you that you, your family, and whomever else you so wish will be kept safe, so","@@@@\n")
+    WordCore.word_corey("@@@@ >>>", "Worry not. Now, without further ado, let us begin the transition to a new age!","@@@@\n")
+    WordCore.word_corey("@@@@ >>>", "9/012/XX", "@@@@\n")
+    WordCore.word_corez("@@@@                                                                                             @@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
+    input(str("press ENTER to exit Magus..."))
+    save()
 
-def Game_Over(): # Determines if you get a game over or not, includes victory
+def Game_Over():
     global infected
     global zombies
     global cure
@@ -1535,245 +1214,79 @@ def Game_Over(): # Determines if you get a game over or not, includes victory
         else:
             return
     if cure >= 1000:
-        clear()
+        Clear.clear()
         cured_game_over()
     else:
         return
 
-def infected_game_over(): # Game over due to infected being dead
-    time2 = time.time()
-    clear()
-    word_core("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", 0.01)
-    word_core("{      _____       ___     _     _    _____     ____     _      _   _____   ___     }\n", 0.01)
-    word_core("{    //-----\\\\    //-\\\\   | \   / |  ||----   //    \\\\  \ \    / / ||----  || \\\\    }\n", 0.01)
-    word_core("{    ||          //   \\\\  | \\\\_// |  ||____   || || ||   \ \  / /  ||____  ||_//    }\n", 0.01)
-    word_core("{    ||  _____   ||---||  | |   | |  ||----   || || ||    \ \/ /   ||----  || \\\\    }\n", 0.01)
-    word_core("{    \\\\_____//   ||   ||  |_|   |_|  ||____   \\\\____//     \__/    ||____  ||  \\\\   }\n", 0.01)
-    print("{	                                                                            }")
-    word_core("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", 0.01)
+def infected_game_over():
+    Clear.clear()
+    UI.infected_game_over_icon()
     time.sleep(1)
     print("\n")
-    word_corex("NO INFECTED |", "All infected have been exterminated....")
+    WordCore.word_corex("NO INFECTED |", "All infected have been exterminated....")
     print("\n")
-    word_corex("NO ZOMBIES |", "All zombies have been exterminated...")
+    WordCore.word_corex("NO ZOMBIES |", "All zombies have been exterminated...")
     time.sleep(1)
     print("\n")
-    word_corex("CURE COMPLETE |", "All infected have been cured and zombies quarentined....")
+    WordCore.word_corex("CURE COMPLETE |", "All infected have been cured and zombies quarentined....")
     print("\n")
-    global time1
-    end_time = int(time2 - time1)
-    print("\n")
-    word_corex("Time |", str(end_time) + " Seconds")
-    minutes = int(float(end_time) / 60)
-    print("\n")
-    word_corex("Time |", str(minutes) + " Minutes")
-    hours = int(float(minutes) / 60)
-    print("\n")
-    word_corex("Time |", str(hours) + " Hours")
-    print("\n")
-    raw_input("Press ENTER to continue....")
+    input(str("Press ENTER to continue...."))
     gc.collect()
-    clear()
-    os.system("python Main.py")
+    Clear.clear()
+    os.system("python3 Main.py")
 
 def cured_game_over(): # You got cured
-    time2 = time.time()
-    clear()
-    word_core("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", 0.01)
-    word_core("{      _____       ___     _     _    _____     ____     _      _   _____   ___     }\n", 0.01)
-    word_core("{    //-----\\\\    //-\\\\   | \   / |  ||----   //    \\\\  \ \    / / ||----  || \\\\    }\n", 0.01)
-    word_core("{    ||          //   \\\\  | \\\\_// |  ||____   || || ||   \ \  / /  ||____  ||_//    }\n", 0.01)
-    word_core("{    ||  _____   ||---||  | |   | |  ||----   || || ||    \ \/ /   ||----  || \\\\    }\n", 0.01)
-    word_core("{    \\\\_____//   ||   ||  |_|   |_|  ||____   \\\\____//     \__/    ||____  ||  \\\\   }\n", 0.01)
-    print("{	                                                                            }")
-    word_core("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n", 0.01)
+    Clear.clear()
+    UI.cured_game_over_icon()
     time.sleep(1)
     print("\n")
-    word_corex("CURE COMPLETE |", "All infected have been cured and zombies quarentined....")
+    WordCore.word_corex("CURE COMPLETE |", "All infected have been cured and zombies quarentined....")
     print("\n")
-    global time1
-    end_time = int(time2 - time1)
-    print("\n")
-    word_corex("Time |", str(end_time) + " Seconds")
-    minutes = int(float(end_time) / 60)
-    print("\n")
-    word_corex("Time |", str(minutes) + " Minutes")
-    hours = int(float(minutes) / 60)
-    print("\n")
-    word_corex("Time |", str(hours) + " Hours")
-    print("\n")
-    raw_input("Press ENTER to continue....")
+    input(str("Press ENTER to continue...."))
     gc.collect()
-    clear()
-    os.system("python Main.py")
+    Clear.clear()
+    os.system("python3 Main.py")
 
 def victory(): # Everyone dies
-    time2 = time.time()
-    clear()
-    word_core("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;';;;;;;;';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;#;;;;;;;;;;;;;+';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@';;;;;;;;;;;;;;;;#+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;#@;;;;;;;;;;;;;;;;;;;'@';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@#;;;;;;;;;;;;;;;;;;;;;;@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'@#;;;;;;;;;;;;;;;;;;;;;;;;@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;'@@;;;;;;;;;;;;;;;;;;;;;;;;;'@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@;;;;;;;;;;;;;;;;;;;;;;;;;;;#@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;+@@';;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;+@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@+;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;+@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;+@@@;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@+;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;#@@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@';;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@#;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;'@@@@@;;;;;;;;;;;;;'+++';;;;;;;;;;;;;#@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;'@@@@@+;;;;;;;;+@@@@@@@@@@@@;;;;;;;;;@@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;'@@@@@@;;;;;;@@@@@@@@@@@@@@@@@+;;;;;;@@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@@@;;;;#@@@@@@@@@@@@@@@@@@@@';;;@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@;;@@@@@@@@@@@@@@@@@@@@@@@+;;@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@+;;@@@@@@@@@#+##@@@@@@@@@;;@@@@@@@+;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@;;'@@@@+;;;;;;;;;;#@@@@;;@@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;+@@@@@@@@;;;@';;;;;;;;;;;;;;##;;#@@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@@;;;;;;;;;;;;;;;;;;;;;#@@@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;#@@@@@@@@@@@+;;;;;;;;;;;;;;;;;;@@@@@@@@@@#+;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;#@@@@@@@@@@@@@@@@;;;;;;;;;;;;;;;+@@@@@@@@@@@@@@@#;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;@@@@@@@@@@@@@@@@@@@@@+;;;;;;;;;;#@@@@@@@@@@@@@@@@@@@@';;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;#@@@@@@@@@@@@@@@@@@@@@@@@@@#;'@@@@@@@@@@@@@@@@@@@@@@@@@@@;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;'@@@@@@@@@@@@@@@@@@@@@@@@@@@@';;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;@@@@@@@@@#+++#@@@@@@@@@@@@@@@@;;;;;'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;@@@@@@@;;;;;;;;;;;+@@@@@@@@@@@;;;;;;;'@@@@@@@@@@@#;;;;;;;;;'@@@@@@@';;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;#@@@@@;;;;;;;;;#+;;;;'@@@@@@@@';;;;;;;;@@@@@@@@@+;;;;;';;;;;;;;#@@@@@;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;@@@@';;;;;;;;;;@@@@#;;;@@@@@@@;;;;;;;;;'@@@@@@@;;;+@@@@;;;;;;;;;;@@@@@;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;@@@@;;;;;;;;;;;;@@@@@;;;;+@@@@@;;;;;;;;;;@@@@@+;;;;@@@@@;;;;;;;;;;;#@@@;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;@@@;;;;;;;;;;;;;@@@@@;;;;;+@@@@;;;;;;;;;'@@@@';;;;;@@@@@;;;;;;;;;;;;#@@@;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;#@@;;;;;;;;;;;;;;@@@@@;;;;;;#@@#;;;;;;;;;;@@@+;;;;;;@@@@@;;;;;;;;;;;;;#@@;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;@@';;;;;;;;;;;;;;@@@@@;;;;;;;@;;;;;;;;;;;;;'@;;;;;;'@@@@@;;;;;;;;;;;;;;@@#;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;@@;;;;;;;;;;;;;;;@@@@@;;;;;;;;;;@@;;;;;'@#;;;;;;;;;#@@@@#;;;;;;;;;;;;;;;@@;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;+@;;;;;;;;;;;;;;;;#@@@@#;;;;;;;#@@@@@##@@@@@';;;;;;;@@@@@;;;;;;;;;;;;;;;;@@;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;@@;;;;;;;;;;;;;;;;;@@@@@;;;;;;;;@@@@@@@@@@@@;;;;;;;;@@@@@;;;;;;;;;;;;;;;;;@;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;@';;;;;;;;;;;;;;;;;@@@@@+;;;;;;;@@@@@@@@@@@#;;;;;;;@@@@@@;;;;;;;;;;;;;;;;;@+;;;;;;@\n", 0.001)
-    word_core("@;;;;;;@;;;;;;;;;;;;;;;;;;#@@@@@;;;;;;;#@@@@@@@@@@;;;;;;;;@@@@@';;;;;;;;;;;;;;;;;+#;;;;;;@\n", 0.001)
-    word_core("@;;;;;;@;;;;;;;;;;;;;;;;;;;@@@@@@;;;;;;'@@@@@@@@@@;;;;;;;@@@@@@;;;;;;;;;;;;;;;;;;;@;;;;;;@\n", 0.001)
-    word_core("@;;;;;;@;;;;;;;;;;;;;;;;;;;#@@@@@#;;;;;;@@@@@@@@@@;;;;;;@@@@@@';;;;;;;;;;;;;;;;;;;@;;;;;;@\n", 0.001)
-    word_core("@;;;;;;#;;;;;;;;;;;;;;;;;;;;@@@@@@+;;;;;@@@@@@@@@@;;;;;#@@@@@@;;;;;;;;;;;;;;;;;;;;@;;;;;;@\n", 0.001)
-    word_core("@;;;;;;#;;;;;;;;;;;;;;;;;;;;;@@@@@@#;;;;@@@@@@@@@@;;;;@@@@@@@;;;;;;;;;;;;;;;;;;;;;#;;;;;;@\n", 0.001)
-    word_core("@;;;;;;#;;;;;;;;;;;;;;;;;;;;;+@@@@@@@';;@@@@@@@@@@;;;@@@@@@@';;;;;;;;;;;;;;;;;;;;;+;;;;;;@\n", 0.001)
-    word_core("@;;;;;;#;;;;;;;;;;;;;;;;;;;;;;+@@@@@@@;;@@@@@@@@@@;'@@@@@@@+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;+@@@@@@;;@@@@@@@@@@;;@@@@@@+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'@@@@#;+@@@@@@@@@@;;@@@@@';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@;;@@@@@@@@@@@';@@@@;;;;;;;;;;;;;;;;;;;;;;;;;';;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@;;@@@@@@@@@@@@;;@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;#@@@@@@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@@@@@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'@@@@@@@@@@@@@@@@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@@@@@@@@+@@@@@@@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;';;;;;;;;;;;;;;;;;;;;;;@@@@@@@@#;;@@@@@@@@#;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;';;;;;;;;;;;;;;;;;;;+@@@@@@@@#;;;'@@@@@@@@@;;;;;;;;;;;;;;;;;;;;';;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;'+;;;;;;;;;;;;;;;;@@@@@@@@@+;;;;;;@@@@@@@@@;;;;;;;;;;;;;;;;;';;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;@+;;;;;;;;;;;;#@@@@@@@@@';;;;;;;;@@@@@@@@@@;;;;;;;;;;;;;'@;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;'@@+;;;;;'#@@@@@@@@@@#;;;;;;;;;;;'@@@@@@@@@@+;;;;;;;;#@+;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;'@@@@@@@@@@@@@@@@#;;;;;;;;;;;;;;;+@@@@@@@@@@@@@@@@@+;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;+@@@@@@@@@@#;;;;;;;;;;;;;;;;;;;;;@@@@@@@@@@@@@';;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;'+++';;;;;;;;;;;;;;;;;;;;;;;;;@\n", 0.001)
-    word_core("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n", 0.001)
-    print("\n")
-    word_core("  +@@         @@.@@    @@@@@@@@@@ @@@@@@@@@@@@   @@@@@@@@:   @@@@@@@@@@.  @@        #@`\n", 0.001)
-    word_core("   @@.       #@# @@  :@@@@@@@@@@@ @@@@@@@@@@@@ :@@@@@@@@@@@  @@@@@@@@@@@# @@        #@`\n", 0.001)
-    word_core("    @@       @@  @@  @@:               @@      @@:       @@  @@       `@@ @@        #@`\n", 0.001)
-    word_core("    #@#     @@.  @@  @@                @@      @@        @@  @@        @@ @@        #@`\n", 0.001)
-    word_core("     @@    :@@   @@  @@                @@      @@        @@  @@        @@ @@        #@`\n", 0.001)
-    word_core("     `@@   @@    @@  @@                @@      @@        @@  @@@@@@@@@@@@ +@@@@@@@@@@@`\n", 0.001)
-    word_core("      @@; @@:    @@  @@                @@      @@        @@  @@@@@@@@@@@   @@@@@@@@@@@`\n", 0.001)
-    word_core("       @@`@@     @@  @@                @@      @@        @@  @@   @@@               #@`\n", 0.001)
-    word_core("       ,@@@      @@  @@@@@@@@@@@@      @@      @@@@@@@@@@@@  @@    #@@'     @@@@@@@@@@\n", 0.001)
-    word_core("        @@'      @@   @@@@@@@@@@@      @@       @@@@@@@@@@#  @@     `@@@    @@@@@@@@@@\n", 0.001)
-    print("\n")
-    word_corex("VICTORY |", "All life on earth, except you and your select, have been exterminated")
-    global time1
-    end_time = int(time2 - time1)
-    print("\n")
-    word_corex("Time |", str(end_time) + " Seconds")
-    minutes = int(float(end_time) / 60)
-    print("\n")
-    word_corex("Time |", str(minutes) + " Minutes")
-    hours = int(float(minutes) / 60)
-    print("\n")
-    word_corex("Time |", str(hours) + " Hours")
-    print("\n")
-    raw_input("Press ENTER to continue....")
+    Clear.clear()
+    UI.victory_icon()
+    WordCore.word_corex("VICTORY |", "All life on earth, except you and your select, have been exterminated")
+    input(str("Press ENTER to continue...."))
     gc.collect()
-    os.system("python Main.py")
+    os.system("python3 Main.py")
 
-def lux():
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@ @@        .@@         @@ +@@@         #@@#                                                  @@@@\n")
-    word_corez("@@@@ @@        .@@         @@  `@@@       @@@.                                                   @@@@\n")
-    word_corez("@@@@ @@        .@@         @@    @@@.   `@@@                                                     @@@@\n")
-    word_corez("@@@@ @@        .@@         @@     #@@# +@@@                                                      @@@@\n")
-    word_corez("@@@@ @@        .@@         @@      .@@@@@:                                                       @@@@\n")
-    word_corez("@@@@ @@        .@@         @@        @@@`                                                        @@@@\n")
-    word_corez("@@@@ @@        .@@         @@      .@@@@@'                                                       @@@@\n")
-    word_corez("@@@@ @@        .@@         @@     #@@+ :@@@                                                      @@@@\n")
-    word_corez("@@@@ @@        `@@        :@@    @@@.    @@@                                                     @@@@\n")
-    word_corez("@@@@ @@@@@@@@@@ @@@@@@@@@@@@#  .@@@       @@@;                                                   @@@@\n")
-    word_corez("@@@@ @@@@@@@@@@ `@@@@@@@@@@#  +@@@         '@@@                                                  @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                :     # @@@@@@@@@ +@@@@@@@@ #     :          @@@@\n")
-    word_corez("@@@@                                               @@   :@@ @:     :@ @@        @@:   @@         @@@@\n")
-    word_corez("@@@@                                             #@+   @@.  @:     .@ #@@@@@@@`  .@@   +@#       @@@@\n")
-    word_corez("@@@@                                             @;   #@`   @:     .@  ;@@@@@@@   `@#   ;@       @@@@\n")
-    word_corez("@@@@                                              @@:  :@@  @:     .@        `@  @@:  :@@        @@@@\n")
-    word_corez("@@@@                                               :@    #@ @@:::::@@ :::::::#@ @#    @:         @@@@\n")
-    word_corez("@@@@                                                        :@@@@@@@: @@@@@@@@'                  @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
-    word_corez("@@@@                                                                                             @@@@\n")
+def UniWrite():
+    os.system("rm UniData.py")
+    with open("UniData.py", "a") as file:
+        file.write("healthy = " + str(healthy) + "\n")
+        file.write("infected = " + str(infected) + "\n")
+        file.write("zombies = " + str(zombies) + "\n")
+        file.write("dead = " + str(dead) + "\n")
+        file.write("cure = " + str(cure) + "\n")
+        file.write("week = " + str(week) + "\n")
+        file.write("infectivity = " + str(infectivity) + "\n")
+        file.write("infectivity_limit = " + str(infectivity_limit) + "\n")
+        file.write("severity = " + str(severity) + "\n")
+        file.write("severity_limit = " + str(severity_limit) + "\n")
+        file.write("lethality = " + str(lethality) + "\n")
+        file.write("lethality_limit = " + str(lethality_limit) + "\n")
+        file.write("weekly_infections = " + str(weekly_infections) + "\n")
+        file.write("dna_points = " + str(dna_points) + "\n")
+        file.write("burst = " + str(burst) + "\n")
+        file.write("burst_price = " + str(burst_price) + "\n")
+        file.write("necrosis = " + str(necrosis) + "\n")
+        file.write("necrosis_price = " + str(necrosis_price) + "\n")
+        file.write("water = " + str(water) + "\n")
+        file.write("water_price = " + str(water_price) + "\n")
+        file.write("air = " + str(air) + "\n")
+        file.write("blood = " + str(blood) + "\n")
+        file.write("saliva = " + str(saliva) + "\n")
+        file.write("zombify = " + str(zombify) + "\n")
+        file.write("rise = " + str(rise) + "\n")
+        file.write("limit = int(" + str(healthy) + " + " + str(infected) + " + " + str(dead) + " + " + str(zombies) + ")\n")
+        file.write("old = int(1)\n")
+        file.write("color = " + str(color) + "\n")
 
-def mail():
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@ @          @; `@@@@@@@  `@@@@@@@@ ;@      @; @@@@@@@@                                       @@@")
-    print("@@@@ @@        @@+ @@:::::@@ @@::::::: ;@      @; @:::::::                                       @@@")
-    print("@@@@ @@@      @@@+ @      ;@ @# @@@@@@ ;@      @; @::::::                                        @@@")
-    print("@@@@ @ @@    @@ @+ @::::::+@ @# @@@@@@ ;@      @; @@@@@@@@.          @@@@@@@@@@@@@@@@@@          @@@")
-    print("@@@@ @  @@  @@  @+ @@@@@@@@@ @#      @ ;@      @;        @#         ` @@@@@@@@@@@@@@@@           @@@")
-    print("@@@@ @   @@#@   @+ @      ;@ @#      @ ;@      @;        @#         @` #@@@@@@@@@@@@@  @         @@@")
-    print("@@@@ @    @@    @+ @      ;@ +@@@@@@@@  @@@@@@@@  @@@@@@@@`         @@: '@@@@@@@@@@@  @@         @@@")
-    print("@@@@                                                                @@@' '@@@@@@@@@  @@@         @@@")
-    print("@@@@                                                                @@@@' :@@@@@@@  @@@@         @@@")
-    print("@@@@                                                                @@@@@# `@@@@@  @@@@@         @@@")
-    print("@@@@                                                                @@@@@@   @@@  `@@@@@         @@@")
-    print("@@@@                                                                @@@@@  @ `@ `@ `@@@@         @@@")
-    print("@@@@                   @;         #@  @@@@@@@. .@ :@                @@@@  @@@  `@@@  @@@         @@@")
-    print("@@@@                   @@:       +@@ @@:::::@@ .@ :@                @@@  @@@@@:@@@@@  @@         @@@")
-    print("@@@@                   @+@.     ;@+@ @+      @ .@ :@                @@  @@@@@@@@@@@@@  @         @@@")
-    print("@@@@                   @:;@`   :@.;@ @#::::::@ .@ :@                @  @@@@@@@@@@@@@@@           @@@")
-    print("@@@@                   @: +@` .@: ;@ @@@@@@@@@ .@ :@                 `@@@@@@@@@@@@@@@@@          @@@")
-    print("@@@@                   @:  +@`@:  ;@ @+      @ .@ :@                                             @@@")
-    print("@@@@                   @:   #@'   ;@ @+      @ .@ :@@@@@@                                        @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@                                                                                             @@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-
-start_turn()
+#start_turn()
 

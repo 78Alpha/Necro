@@ -25,3 +25,4 @@ zombify = 0
 rise = 0
 limit = int(100000 + 1 + 0 + 0)
 old = int(1)
+color = 0

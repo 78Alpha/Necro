@@ -1,0 +1,62 @@
+import Clear, time
+from ColorSplash import *
+
+def frame1():
+    print(Reset + "  " + Yellow_Square + ".  " + Reset)
+    print(Reset + "  " + Magenta_Square + ".  " + Reset)
+    print(Reset + " " + White_Square + "." + Magenta_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + Magenta_Square + "." + White_Square + "." + Red_Square + "." + White_Square + "." + Magenta_Square + "." + Reset)
+    print(Reset + " " + White_Square + "." + Blue_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + " " + Blue_Square + "..." + Reset + " ")
+    print(Reset + " " + Blue_Square + "..." + Reset + " ")
+    print(Reset + " " + Blue_Square + "..." + Reset + " ")
+
+def frame2():
+    print(Reset + "   " + Yellow_Square + ".  " + Reset)
+    print(Reset + "   " + Magenta_Square + ".  " + Reset)
+    print(Reset + "  " + White_Square + "." + Magenta_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + " " + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + " " + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + " " + Magenta_Square + "." + White_Square + "." + Red_Square + "." + White_Square + "." + Magenta_Square + "." + Reset)
+    print(Reset + "  " + White_Square + "." + Blue_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + "  " + Blue_Square + "..." + Reset + " ")
+    print(Reset + "  " + Blue_Square + "..." + Reset + " ")
+    print(Reset + "  " + Blue_Square + "..." + Reset + " ")
+
+def frame3():
+    print(Reset + "    " + Yellow_Square + ".  " + Reset)
+    print(Reset + "    " + Magenta_Square + ".  " + Reset)
+    print(Reset + "   " + White_Square + "." + Magenta_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + "  " + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + "  " + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + "  " + Magenta_Square + "." + White_Square + "." + Red_Square + "." + White_Square + "." + Magenta_Square + "." + Reset)
+    print(Reset + "   " + White_Square + "." + Blue_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + "   " + Blue_Square + "..." + Reset + " ")
+    print(Reset + "   " + Blue_Square + "..." + Reset + " ")
+    print(Reset + "   " + Blue_Square + "..." + Reset + " ")
+
+def frame4():
+    print(Reset + "     " + Yellow_Square + ".  " + Reset)
+    print(Reset + "     " + Magenta_Square + ".  " + Reset)
+    print(Reset + "    " + White_Square + "." + Magenta_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + "   " + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + "   " + White_Square + ".." + Red_Square + "." + White_Square + ".." + Reset)
+    print(Reset + "   " + Magenta_Square + "." + White_Square + "." + Red_Square + "." + White_Square + "." + Magenta_Square + "." + Reset)
+    print(Reset + "    " + White_Square + "." + Blue_Square + "." + White_Square + "." + Reset + " ")
+    print(Reset + "    " + Blue_Square + "..." + Reset + " ")
+    print(Reset + "    " + Blue_Square + "..." + Reset + " ")
+    print(Reset + "    " + Blue_Square + "..." + Reset + " ")
+
+Clear.clear()
+frame1()
+time.sleep(.5)
+Clear.clear()
+frame2()
+time.sleep(.5)
+Clear.clear()
+frame3()
+time.sleep(.5)
+Clear.clear()
+frame4()
