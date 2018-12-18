@@ -84,7 +84,7 @@ def word_corey(stub, sen, stubs):
         print(letter, end='')
         sys.stdout.flush()   
         marker += 1
-        #time.sleep(.001)
+        time.sleep(.01)
     while marker != 97:
         marker += 1
         print(" ", end='')

@@ -1,4 +1,5 @@
-import time, os, platform, sys, Clear, Level1, WordCore, UniData
+import time, os, platform, sys, Clear, Level1, WordCore
+from json_system import *
 
 def intro(): #The intro to the game
     Clear.clear()
@@ -34,8 +35,7 @@ def intro(): #The intro to the game
     if action == "START":
         Level1.Save_Check()
     elif action == "NEW":
-        Level1.UniWrite()
-        os.system("rm Save_file.py")
+        load_3()
         Level1.Save_Check()
     elif action == "SETTINGS":
         settings()
@@ -46,22 +46,18 @@ def intro(): #The intro to the game
         intro()
 
 def settings():
-    color = str(input("Enable color (Current value [" + str(UniData.color) + "]): " ))
-    if color == "YES":
-        with open('UniData.py', 'r') as file:
-            data = file.readlines()
-        data[27] = "color = 1\n"
-        with open("UniData.py", 'w') as file:
-            file.writelines(data)
-        WordCore.word_core("Color Enabled", 0.1)
+    with open("Globals.txt", 'r') as f:
+        variables = json.load(f)
+    color_ = str(input("Enable color (Current value [" + str(variables["color"]) + "]): "))
+    if color_ == "YES":
+        variables["color"] = 1
+        with open("Globals.txt", 'w') as f2:
+            json.dump(variables, f2, indent=3)
         intro()
-    elif color == "NO":
-        with open('UniData.py', 'r') as file:
-            data = file.readlines()
-        data[27] = "color = 0\n"
-        with open("UniData.py", 'w') as file:
-            file.writelines(data)
-        WordCore.word_core("Color Disabled", 0.1)
+    elif color_ == "NO":
+        variables["color"] = 0
+        with open("Globals.txt", 'w') as f2:
+            json.dump(variables, f2, indent=3)
         intro()
     else:
         settings()

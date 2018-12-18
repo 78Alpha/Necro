@@ -1,6 +1,5 @@
-import time, sys, WordCore
+import time, sys, WordCore, json
 from ColorSplash import *
-from UniData import *
 
 #Color options run at a fraction speed, set optimization to turn colors off (visual/performance)
 
@@ -716,7 +715,9 @@ def Color_lux():
     print(Reset, end='')
 
 def player_menu_UI():
-    WordCore.word_corey("@@@@", "  Week: " + str(week), "@@@@\n")
+    with open("UniData.txt", 'r') as f:
+        variables = json.load(f)
+    WordCore.word_corey("@@@@", "  Week: " + str(variables["week"]), "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
     WordCore.word_corey("@@@@ >>> WORLD | ", "View world data", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
@@ -738,8 +739,10 @@ def player_menu_UI():
     print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
 def Color_player_menu_UI():
+    with open("UniData.txt", 'r') as f:
+        variables = json.load(f)
     print(Green_Blackxx, end='')
-    WordCore.word_corey("@@@@", "  Week: " + str(week), "@@@@\n")
+    WordCore.word_corey("@@@@", "  Week: " + str(variables["week"]), "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
     WordCore.word_corey("@@@@ >>> WORLD | ", "View world data", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
