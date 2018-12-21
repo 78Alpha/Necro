@@ -48,6 +48,7 @@ def intro(): #The intro to the game
 def settings():
     with open("Globals.txt", 'r') as f:
         variables = json.load(f)
+    print("This feature is in [alpha], and may cause [Program Termination]")
     color_ = str(input("Enable color (Current value [" + str(variables["color"]) + "]): "))
     if color_ == "YES":
         variables["color"] = 1

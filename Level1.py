@@ -113,11 +113,11 @@ def BURST_info(): #displays info about burst
     else:
         UI.BURST_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[0] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[0]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-Virus disables pressure regulation of host skull, following up with a forced intake","@@@@\n")
     WordCore.word_corey("@@@@", "  of pressurized oxygen until cranial rupture/explosion occurrs", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[0]"] + ", " + variables["influence[1]"] + ", " + variables["influence[2]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -149,13 +149,13 @@ def NECROSIS_info(): #Displays info about necrosis
         UI.Color_Necrosis()
     else:
         UI.NECROSIS_icon()
-    UI.NECROSIS_icon()
+    #UI.NECROSIS_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[1] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[1]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-virus enters a low power state while in a dead host, power is diverted to motion","@@@@\n")
     WordCore.word_corey("@@@@", "  sensors such that individuals within proximity will be attacked before reaction is possible", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[0]"] + ", " + variables["influence[1]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -197,13 +197,13 @@ def WATER_info(): #Displays info about water
         UI.Color_Water()
     else:
         UI.WATER_icon()
-    UI.WATER_icon()
+    #UI.WATER_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[2] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[2]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-Virus is given an instruction set to build waterproofing from genetic material,","@@@@\n")
     WordCore.word_corey("@@@@", "  can allow for the bypassing of filters with enough biological shielding", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[0]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -248,13 +248,13 @@ def AIR_info(): #Displays info about air
         UI.Color_Air()
     else:
         UI.AIR_icon()
-    UI.AIR_icon()
+    #UI.AIR_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[3] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[3]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-Virus begins to cut thin sllices of skin from the host to act as a parachute,","@@@@\n")
     WordCore.word_corey("@@@@", "  carrying itself long distances via updrafts", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[0]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -297,14 +297,14 @@ def BLOOD_info(): # Displays info about blood
         UI.Color_Blood()
     else:
         UI.BLOOD_icon()
-    UI.BLOOD_icon()
+    #UI.BLOOD_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[4] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[4]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-Virus attaches drone colonies to blood cells, both red and white, weakening the","@@@@\n")
     WordCore.word_corey("@@@@", "  hosts immune system and capability to fight back. Transmission Becomes possible through", "@@@@\n")
     WordCore.word_corey("@@@@", "  contact with blood, but only on an open wound or intake","@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ",influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ",variables["influence[0]"] + ", " + variables["influence[1]"] + ", " + variables["influence[2]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -347,13 +347,13 @@ def SALIVA_info(): # Shows saliva info
         UI.Color_Saliva()
     else:
         UI.SALIVA_icon()
-    UI.SALIVA_icon()
+    #UI.SALIVA_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[5] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[5]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-Virus replicates in salivary glands, transmitting itself through touch with food,","@@@@\n")
     WordCore.word_corey("@@@@", "  Drink, or human contact", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[0], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[0]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -404,13 +404,13 @@ def ZOMBIFY_info(): # Explains what zombify is
         UI.Color_Zombify()
     else:
         UI.ZOMBIFY_icon()
-    UI.ZOMBIFY_icon()
+    #UI.ZOMBIFY_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[6] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[6]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-Virus burrows into brainstem and hijacks the hosts nervous system. The electrical","@@@@\n")
     WordCore.word_corey("@@@@", "  surge of the virus has the potential to bring even the most severely wounded back to life", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[0] + ", " + influence[1] + ", " + influence[2], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[0]"] + ", " + variables["influence[1]"] + ", " + variables["influence[2]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -492,14 +492,14 @@ def RISE_info(): # more info
         UI.Color_Rise()
     else:
         UI.RISE_icon()
-    UI.RISE_icon()
+    #UI.RISE_icon()
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  ", "<<" + gene[7] + ">>", "@@@@\n")
+    WordCore.word_corey("@@@@  ", "<<" + variables["gene[7]"] + ">>", "@@@@\n")
     WordCore.word_corey("@@@@", "  Nano-virus attaches to all vital organs of corpses and applies rapid surges to bring", "@@@@\n")
     WordCore.word_corey("@@@@", "  Them to a semi-living state, the energy drain takes away from the ability to", "@@@@\n")
     WordCore.word_corey("@@@@", "  Turna non-hijacked host into a zombie but will bring back infected persons", "@@@@\n")
     WordCore.word_corey("@@@@", "", "@@@@\n")
-    WordCore.word_corey("@@@@  Affects: ", influence[1], "@@@@\n")
+    WordCore.word_corey("@@@@  Affects: ", variables["influence[1]"], "@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
     WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
 
@@ -591,27 +591,27 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
         SALIVA_store_price()
         ZOMBIFY_store_price()
         RISE_store_price()
-        WordCore.word_corey("@@@@", "  " + gene[0] + " | Research Cost: " + str(variables["burst_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[0]"] + " | Research Cost: " + str(variables["burst_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[1] + " | Research Cost: " + str(variables["necrosis_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[1]"] + " | Research Cost: " + str(variables["necrosis_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[2] + " | Research Cost: " + str(variables["water_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[2]"] + " | Research Cost: " + str(variables["water_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[3] + " | Research Cost: " + str(variables["air_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[3]"] + " | Research Cost: " + str(variables["air_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[4] + " | Research Cost: " + str(variables["blood_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[4]"] + " | Research Cost: " + str(variables["blood_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[5] + " | Research Cost: " + str(variables["saliva_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[5]"] + " | Research Cost: " + str(variables["saliva_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[6] + " | Research Cost: " + str(variables["zombify_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[6]"] + " | Research Cost: " + str(variables["zombify_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
-        WordCore.word_corey("@@@@", "  " + gene[7] + " | Research Cost: " + str(variables["rise_price"]), "@@@@\n")
+        WordCore.word_corey("@@@@", "  " + variables["gene[7]"] + " | Research Cost: " + str(variables["rise_price"]), "@@@@\n")
         WordCore.word_corey("@@@@", "", "@@@@\n")
         WordCore.word_corey("@@@@  RESEARCH POINTS | ", str(variables["dna_points"]), "@@@@\n")
         WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
         evo = input(str("Synthesize: "))
-        if evo == gene[0]:
+        if evo == variables["gene[0]"]:
             if variables["burst_price"] != '--':
                 if variables["dna_points"] >= variables["burst_price"]:
                     Clear.clear()
@@ -619,13 +619,13 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                     variables["lethality"] += 3
                     variables["severity"] += 25
                     variables["dna_points"] -= variables["burst_price"]
-                    WordCore.word_corex(gene[0] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[0]"] + " |", "Successfully synthesized!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["burst_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[0] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[0]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -636,20 +636,20 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[1]:  # // passive
+        elif evo == variables["gene[1]"]:  # // passive
             if variables["necrosis_price"] != '--':
                 if variables["dna_points"] >= variables["necrosis_price"]:
                     Clear.clear()
                     variables["necrosis"] += 1
                     vriables["severity"] += 10
                     variables["dna_points"] -= variables["necrosis_price"]
-                    WordCore.word_corex(gene[1] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[1]"] + " |", "Successfully synthesized!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["necrosis_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[1] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[1]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -660,20 +660,20 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[2]:
+        elif evo == variables["gene[2]"]:
             if variables["water_price"] != '--':
                 if variables["dna_points"] >= variables["water_price"]:
                     Clear.clear()
                     variables["water"] += 1
                     variables["dna_points"] -= variables["water_price"]
-                    WordCore.word_corex(gene[2] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[2]"] + " |", "Successfully synthesized!")
                     WATER_check()
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["water_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[2] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[2]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     attribute_menu()
                 else:
@@ -683,20 +683,20 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[3]:
+        elif evo == variables["gene[3]"]:
             if variables["air_price"] != '--':
                 if variables["dna_points"] >= variables["air_price"]:
                     Clear.clear()
                     variables["air"] += 1
                     variables["dna_points"] -= variables["air_price"]
-                    WordCore.word_corex(gene[3] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[3]"] + " |", "Successfully synthesized!")
                     AIR_check()
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["air_price"]:
                     clear.clear()
-                    WordCore.word_corex(gene[3] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[3]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -707,20 +707,20 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[4]:
+        elif evo == variables["gene[4]"]:
             if variables["blood_price"] != '--':
                 if variables["dna_points"] >= variables["blood_price"]:
                     Clear.clear()
                     variables["blood"] += 1
                     variables["dna_points"] -= variables["blood_price"]
-                    WordCore.word_corex(gene[4] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[4]"] + " |", "Successfully synthesized!")
                     BLOOD_check()
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["blood_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[4] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[4]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -731,20 +731,20 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[5]:
+        elif evo == variables["gene[5]"]:
             if variables["saliva_price"] != '--':
                 if variables["dna_points"] >= variables["saliva_price"]:
                     Clear.clear()
                     variables["saliva"] += 1
                     variables["dna_points"] -= variables["saliva_price"]
-                    WordCore.word_corex(gene[5] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[5]"] + " |", "Successfully synthesized!")
                     SALIVA_check()
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["saliva_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[5] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[5]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -755,19 +755,19 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[6]:  # // passive
+        elif evo == variables["gene[6]"]:  # // passive
             if variables["zombify_price"] != '--':
                 if variables["dna_points"] >= variables["zombify_price"]:
                     Clear.clear()
                     variables["zombify"] += 1
                     variables["dna_points"] -= variables["zombify_price"]
-                    WordCore.word_corex(gene[6] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[6]"] + " |", "Successfully synthesized!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["zombify_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[6] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[6]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -778,20 +778,20 @@ def attribute_menu(): # This is the lab, where all genes are synthed and researc
                 WordCore.word_core("There is nothing more to research on this gene...", 0.01)
                 time.sleep(1)
                 attribute_menu()
-        elif evo == gene[7]:
+        elif evo == variables["gene[7]"]:
             if variables["rise_price"] != '--':
                 if variables["dna_points"] >= variables["rise_price"]:
                     Clear.clear()
                     variables["rise"] += 1
                     variables["dna_points"] -= variables["rise_price"]
-                    WordCore.word_corex(gene[7] + " |", "Successfully synthesized!")
+                    WordCore.word_corex(variables["gene[7]"] + " |", "Successfully synthesized!")
                     RISE_check()
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
                 elif variables["dna_points"] <= variables["rise_price"]:
                     Clear.clear()
-                    WordCore.word_corex(gene[6] + " |", "Synthesis Failed!")
+                    WordCore.word_corex(variables["gene[7]"] + " |", "Synthesis Failed!")
                     time.sleep(2)
                     Clear.clear()
                     attribute_menu()
@@ -876,7 +876,7 @@ def player_menu():
     elif answer == "VIRUS":
         Clear.clear()
         if variables["color"] != 0:
-            Graph.color_plague_status_graph_mini()
+            Graph.color_plague_status_graph()
         else:
             Graph.plague_status_graph()
         player_menu()
