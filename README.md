@@ -1,37 +1,25 @@
-## Welcome to GitHub Pages
+## Welcome Doctor!
 
-You can use the [editor on GitHub](https://github.com/78Alpha/Necro/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+In this IN-Dev game you will be the one to create the plague to destroy life as we know it! Mysterious individuals have come into your life and found that one soft spot to nake you bend your knee, so take the life of all, grow the ultimate form of death, or pay the consequences.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Platform
 
-### Markdown
+Designed purely with CPython, this game is currently cross-platform without any 3rd party dependencies with some minor exceptions...
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+- Windows 8.1 and below
+- Android
+- IOS
 
-```markdown
-Syntax highlighted code block
+Those listed above do not have direct support in mind (yet!). The game is dependant on escape sequences currently and therefore does not work well on Windows command prompt. On Windows 10 you can emulate a terminal using powershell and certain settings so it has partial native support. Windows 8.1 and below would need to use something like commander (may be added in future packages with custom launch options). Android and IOS, even if you use the .py files in some kind of editor, the resolution of such screens will break the text based GUI, and if an actual GUI is added (or 3rd party dependencies) it will cease to function at all.
 
-# Header 1
-## Header 2
-### Header 3
+### Mechanics
 
-- Bulleted
-- List
+It's fairly simple, go from week to week (turns) and try to "kill all humans". You can do this in a variety of ways, mostly pre-determined gene mutations at this point.
 
-1. Numbered
-2. List
+### Disclaimer
 
-**Bold** and _Italic_ and `Code` text
+I have no idea if the game can actually be beaten, in the first version I tried I lost in under 30 days, so testing and balancing will need to be added as things roll along, so if you end up yelling at your screen, tell me what happened and I may be able to balance it out. Just report it in the issues section of this repository.
 
-[Link](url) and ![Image](src)
-```
+### Bugs
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/78Alpha/Necro/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+If you find a bug, let me know, Linux gets prime support since WIndows is just a VM for me. The issues section should be put to good use!
