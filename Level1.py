@@ -1,5 +1,6 @@
 import os, platform, time, secrets, gc, sys, threading, Clear, WordCore, Loading, UI, Graph, Generation, json
 from json_system import *
+from ColorSplash import *
 
 OS = platform.system()
 
@@ -37,8 +38,10 @@ def infecting_agent(): # Determines how many infections occur
     with open("UniData.txt", 'r') as f:
         variables = json.load(f)
     inf_value = float(variables["infectivity"])/(1 + variables["lethality"]) # Must be kept as int() + lethality, inflates lethality otherwise
-    variables["infected"] += int(inf_value)
-    variables["healthy"] -= int(inf_value)
+    variables["infected"] += int(inf_value) + int(variables["weekly_infections"])
+    variables["healthy"] -= int(inf_value) + int(variables["weekly_infections"])
+    with open("UniData.txt", 'w') as f2:
+        json.dump(variables, f2, indent=3)
 
 
 def enforce_value_maximums(): #Makes sure that maximum/minumum values are never violated
@@ -842,30 +845,12 @@ def player_menu():
     if variables["color"] != 0:
         UI.Color_lux()
         UI.Color_player_menu_UI()
+        answer = input(str(Green_Blackxx + "Command: "))
+        print(Reset, end='')
     else:
         UI.lux()
         UI.player_menu_UI()
-    #WordCore.word_corey("@@@@", "  Week: " + str(week), "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> WORLD | ", "View world data", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> VIRUS | ", "View nano-virus data", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> LAB | ", "Work on your virus in the lab", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> TURN | ", "Move onto the next week", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> FAST | ", "Enter fast turn mode", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> SAVE | ", "Save your progress", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> LOAD | ", "Load a previous save", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #WordCore.word_corey("@@@@ >>> EXIT | ", "Quit the game without saving", "@@@@\n")
-    #WordCore.word_corey("@@@@", "", "@@@@\n")
-    #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    answer = input(str("Command: "))
+        answer = input(str("Command: "))
     if answer == "WORLD":
         Clear.clear()
         if variables["color"] != 0:
@@ -916,13 +901,17 @@ def turn():
     Clear.clear()
     with open("UniData.txt", 'r') as f:
         variables = json.load(f)
+        #variables["week"] += 1
+        #f.close()
     variables["week"] += 1
     with open("UniData.txt", 'w') as f2:
         json.dump(variables, f2, indent=3)
+        #f2.close()
     WordCore.word_core("A new week has come...", 0.01)
     print("\n")
     print("Week Number: " + str(variables["week"]))
     Generation.dna_weekly()
+    Generation.dna_random()
     infecting_agent()
     check_cure_start()
     BURST_check()
@@ -931,7 +920,7 @@ def turn():
     enforce_value_maximums()
     print("\n")
     Graph.graphical_analysis_mini()
-    time.sleep(3)
+    #time.sleep(3)
     player_menu()
 
 
@@ -946,6 +935,7 @@ def turn_fast():
     print("\n")
     print("Week Number: " + str(variables["week"]))
     Generation.dna_weekly()
+    Generation.dna_random()
     infecting_agent()
     check_cure_start()
     BURST_check()
@@ -985,30 +975,20 @@ def Save_Check():
 
 def start_turn():
     Clear.clear()
-    UI.mail()
-    WordCore.word_corez("@@@@          LeyCone@sidramail.gam             TO              MadLab@Magus.org                 @@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    Loading.loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    WordCore.word_corey("@@@@ >>>", "Hello, Doctor, I see the project is going smoothly...","@@@@\n")
-    WordCore.word_corey("@@@@ >>>", "5/19/XX", "@@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    Loading.loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    WordCore.word_corey("@@@@ >>>", "The Nano-Virus you've been working on finally managed to infect someone", "@@@@\n")
-    WordCore.word_corey("@@@@ >>>", "Make sure to keep control, we wouldn't want you to die prematurely on us, now would we?", "@@@@\n")
-    WordCore.word_corey("@@@@ >>>", "9/04/XX", "@@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    Loading.loading("@@@@  ", "Decrypting Message", "....","                                                            Done!    @@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    WordCore.word_corey("@@@@ >>>", "I assure you that you, your family, and whomever else you so wish will be kept safe, so","@@@@\n")
-    WordCore.word_corey("@@@@ >>>", "Worry not. Now, without further ado, let us begin the transition to a new age!","@@@@\n")
-    WordCore.word_corey("@@@@ >>>", "9/012/XX", "@@@@\n")
-    WordCore.word_corez("@@@@                                                                                             @@@@\n")
-    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    WordCore.word_corez("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n")
-    input(str("press ENTER to exit Magus..."))
+    with open("UniData.txt", 'r') as f:
+        variables = json.load(f)
+    if variables["color"] != 0:
+        UI.Color_Mail()
+        UI.intro_sq_c_nano()
+        input(str(Green_Blackxx + "press ENTER to exit Magus..."))
+        print(Reset, end='')
+        #time.sleep(3)
+        #answer = input(str(Green_Blackxx + "Command: "))
+    else:
+        UI.mail()
+        UI.intro_sq()
+        input(str("press ENTER to exit Magus..."))
+        #answer = input(str("Command: "))
     player_menu()
 
 
