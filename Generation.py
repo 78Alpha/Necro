@@ -3,7 +3,7 @@ import secrets, json
 def dna_weekly(): # Weekly supply of DNA for research, used for LAB purchases
     with open("UniData.txt", 'r') as f:
         variables = json.load(f)
-    vRIbles["dna_points"] += int(float(variables["infected"])/(1 + (variables["healthy"] * 100)))
+    variables["dna_points"] += int(float(variables["infected"])/(1 + (variables["healthy"] * 100)))
     dna_random()
     with open("UniData.txt", 'w') as f2:
         json.dump(variables, f2, indent=3)
