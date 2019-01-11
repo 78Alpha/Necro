@@ -1,0 +1,2 @@
+from WordCore import *
+
